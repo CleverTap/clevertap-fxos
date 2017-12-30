@@ -1,0 +1,25 @@
+{
+    "name": "StopStart",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "npm run build-js && npm run build-style",
+        "build-js": "node build.js > static/application.js",
+        "build-style": "lessc less/main.less > static/application.css"
+    },
+    "author": "Loïc Faure-Lacroix",
+    "license": "ISC",
+    "dependencies": {
+        "angular": "^1.4.1",
+        "angular-route": "^1.4.1",
+        "clevertap-fxos": "file:../../",
+        "startstop": "file:local_modules/startstop"
+    },
+    "devDependencies": {
+        "browserify": "^10.2.4",
+        "less": "^2.5.1",
+        "stringify": "^3.1.0"
+    }
+}

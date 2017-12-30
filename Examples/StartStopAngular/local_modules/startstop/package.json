@@ -1,0 +1,14 @@
+{
+    "name": "startstop",
+    "version": "0.0.0",
+    "description": "",
+    "main": "main/index.js",
+    "scripts": {
+    },
+    "author": "Loïc Faure-Lacroix",
+    "license": "ISC",
+    "dependencies": {
+    },
+    "devDependencies": {
+    }
+}

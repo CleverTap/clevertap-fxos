@@ -1,0 +1,9 @@
+<div class="timer">
+  <div class="numbers">
+    {{(stopTime - startTime) | time}}
+  </div>
+  <div class="buttons">
+    <button class="btn" ng-click="start()">Start</button>
+    <button class="btn" ng-click="stop()">Stop</button>
+  </div>
+</div>

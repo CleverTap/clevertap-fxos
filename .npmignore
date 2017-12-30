@@ -1,0 +1,16 @@
+Examples/
+components
+npm-debug.log
+build
+dist
+.DS_Store
+rollup.*
+circle.yml
+dist
+Makefile
+bower.json
+test
+karma.conf.js
+scripts
+.npmignore
+.jshintrc
