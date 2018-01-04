@@ -4,15 +4,14 @@
     "description": "CleverTap Firefox OS SDK",
     "main": "clevertap.js",
     "scripts": {
-      "build": "npm run lint && rollup --config rollup.config.js && rollup --config rollup.min.js",
-      "dev": "rollup -c -w",
-      "lint": "jshint --verbose src",
-      "lint-dev": "npm run lint && npm run dev"
+        "build": "npm run lint && rollup --config rollup.config.js && rollup --config rollup.min.js",
+        "dev": "rollup -c -w",
+        "lint": "jshint --verbose src",
+        "lint-dev": "npm run lint && npm run dev"
     },
     "author": "CleverTap",
     "license": "MIT",
-    "dependencies": {
-    },
+    "dependencies": {},
     "devDependencies": {
         "babel-core": "^6.26.0",
         "babel-plugin-external-helpers": "^6.22.0",
@@ -27,6 +26,6 @@
         "rollup-plugin-node-builtins": "^2.1.2",
         "rollup-plugin-node-resolve": "^3.0.0",
         "rollup-plugin-uglify": "^2.0.1",
-        "uglify-js": "^2.8.29"
+        "uglify-js": "^3.3.4"
     }
 }
