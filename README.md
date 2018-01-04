@@ -8,7 +8,7 @@
 
   See [Example](Examples/Simple).
 
-- Install via npm `npm install --save clevertap-fxos` and require/import the module:  
+- Install via npm `npm install clevertap-fxos --save` and require/import the module:  
 
   `var clevertap = require('clevertap-fxos');`  
 
