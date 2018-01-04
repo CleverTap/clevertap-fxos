@@ -20,7 +20,7 @@
 ```
 clevertap.setLogLevel(clevertap.logLevels.DEBUG); // optional
 clevertap.setAppVersion("1.0.0"); // optional
-clevertap.init("WWW-WWW-WWRZ");
+clevertap.init("WWW-WWW-WWRZ"); // required, pass your CleverTap Account ID
 ```
 #### Record An EVENT
 `clevertap.event.push("Product Viewed");`
