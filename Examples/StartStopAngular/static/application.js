@@ -91,6 +91,7 @@ function ($routeProvider) {
 mod.run(['$templateCache', function ($templateCache) {
   $templateCache.put('main/main.html', mainTemplate)
   clevertap.setLogLevel(clevertap.logLevels.DEBUG);
+  clevertap.setAppVersion("1.0.0");
   clevertap.init("WWW-WWW-WWRZ");
   console.log('Running')
 }])
