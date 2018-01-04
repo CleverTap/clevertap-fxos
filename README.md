@@ -19,6 +19,7 @@
 #### Initialization
 ```
 clevertap.setLogLevel(clevertap.logLevels.DEBUG); // optional
+clevertap.setAppVersion("1.0.0"); // optional
 clevertap.init("WWW-WWW-WWRZ");
 ```
 #### Record An EVENT
