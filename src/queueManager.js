@@ -72,10 +72,11 @@ export default class QueueManager {
     this._scheduleEvents();
   }
   _getEndPoint() {
+    let domain = this.options.domain;
     if (Account.getRegion()) {
-      this.options.domain = Account.getRegion() + '.' + this.options.domain;
+      domain = Account.getRegion() + '.' + this.options.domain;
     }
-    return this.options.protocol + '//' + this.options.domain + '/a2?t=77';
+    return this.options.protocol + '//' + domain + '/a2?t=77';
   }
   _unsentCount() {
     return this._unsentEvents.length + this._unsentProfiles.length;

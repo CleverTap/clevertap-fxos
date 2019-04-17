@@ -2055,10 +2055,11 @@ var QueueManager = function () {
   }, {
     key: '_getEndPoint',
     value: function _getEndPoint() {
+      var domain = this.options.domain;
       if (Account.getRegion()) {
-        this.options.domain = Account.getRegion() + '.' + this.options.domain;
+        domain = Account.getRegion() + '.' + this.options.domain;
       }
-      return this.options.protocol + '//' + this.options.domain + '/a2?t=77';
+      return this.options.protocol + '//' + domain + '/a2?t=77';
     }
   }, {
     key: '_unsentCount',
