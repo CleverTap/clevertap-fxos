@@ -14,29 +14,29 @@ self.addEventListener('push', function(event) {
    // self.registration.active.postMessage("Hi service worker");
     // get all the notification data
     var notificationData = JSON.parse(event.data.text());
-    var title = notificationData['title'];
-    var notificationOptions = notificationData['notificationOptions'];
-    var data = notificationOptions['data'];
+    var title = notificationData.title;
+    var notificationOptions = notificationData.notificationOptions;
+    var data = notificationOptions.data;
     var key;
     if(typeof data !== 'undefined'){
-        key = data['wzrk_id'];
+        key = data.wzrk_id;
     }
     if(typeof key === 'undefined'){
         key = title;
     }
     console.log('Service worker 1 Push event data: ', notificationData);
     localforage.setItem(key, event.data.text()).then(function(value){
-        // console.log("persisted");
+         console.log("persisted",value);
     }).catch(function(err) {
         // This code runs if there were any errors
-        console.log("Error in persisting");
+        console.log("Error in persisting:",err);
     });
 
     // two global variables for backward compatibility
-    globalRedirectPath = notificationData['redirectPath'];
+    globalRedirectPath = notificationData.redirectPath;
     globalNotificationData = notificationData;
 
-    var raiseNotificationViewedPath = notificationData['raiseNotificationViewedPath'];
+    var raiseNotificationViewedPath = notificationData.raiseNotificationViewedPath;
     if(typeof raiseNotificationViewedPath !== "undefined"){
         //raise notification viewed event
         fetch(raiseNotificationViewedPath, {'mode': 'no-cors'}); //ignore the response
@@ -48,7 +48,7 @@ self.addEventListener('push', function(event) {
 
 
 self.addEventListener('install', function(event) {
-    console.dir('install', event)
+    console.dir('install', event);
     console.log("install mai aaya");
 
     // self.skipWaiting()
@@ -86,8 +86,8 @@ function onClick(event, redirectPath, notificationData){
     //     finalDeepLink += '&b=' + encodeURIComponent('button2');
     // } else {
         // general click
-        if (typeof notificationData['deepLink'] !== 'undefined') {
-            finalDeepLink += '&r=' + encodeURIComponent(notificationData['deepLink']);
+        if (typeof notificationData.deepLink !== 'undefined') {
+            finalDeepLink += '&r=' + encodeURIComponent(notificationData.deepLink);
             silentRequest = false;
         }
 
@@ -105,17 +105,17 @@ function onClick(event, redirectPath, notificationData){
 
 self.addEventListener('notificationclick', function(event) {
     var notification = event.notification;
-    var data = notification['data'];
+    var data = notification.data;
     var key;
     if(typeof data !== 'undefined' && data !== null){
-        key = data['wzrk_id'];
+        key = data.wzrk_id;
     }
     if(typeof key === 'undefined'){
-        key = notification['title'];
+        key = notification.title;
     }
     var promise = localforage.getItem(key).then(function(value) {
         var notificationData = JSON.parse(value);
-        var redirectPath = notificationData['redirectPath'];
+        var redirectPath = notificationData.redirectPath;
         // console.log("event",event);
         // console.log("redirect path: " + redirectPath);
         // console.log("notification data: " + notificationData);

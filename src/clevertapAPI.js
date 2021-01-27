@@ -153,6 +153,8 @@ export default class CleverTapAPI {
     // reset profile, creating or restoring guid
     Utils.log.debug(`Processing onUserLogin for ${this.processingUserLoginKey}`);
 
+    // un-register kaios-token for this guid
+    this.unregisterToken(currentGUID);
     // clear any events in the queue
     // wait for callback to configure new GUID/session
     this.queueManager.clearEvents( () => {
@@ -189,6 +191,75 @@ export default class CleverTapAPI {
     if (this.options.sendPages) {
       _generateEvent(Constants.EVENT_TYPES.PAGE, (data) => {this.processEvent(data);});
     }
+  }
+    // registers ServiceWorker for clevertap..
+    registerSW(serviceWorkerPath) {
+        let swRegistration = null;
+        Utils.log.debug('--------->registerSW-->',navigator);
+
+        //unregistration if needed
+        // navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        //     for(let registration of registrations) {
+        //         if(registration.unregister()) {
+        //             Utils.log.debug("service worker:", registration);
+        //             Utils.log.debug("un-register successfully");
+        //         }
+        //     } });
+
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
+            Utils.log.debug('Service Worker and Push is supported');
+            navigator.serviceWorker.register(serviceWorkerPath)
+                .then(swReg => {
+                    swRegistration = swReg;
+                    console.log("Subscription data: ", swReg);
+                    console.log('Registration succeeded.');
+                    this.triggerPushSubscription(swRegistration);
+                })
+                .catch(function(error) {
+                    console.error('Service Worker Error', error);
+                });
+        } else {
+            console.warn('Push messaging is not supported');
+            // pushButton.textContent = 'Push Not Supported';
+        }
+    }
+    triggerPushSubscription(swRegistration) {
+        let publicVapidKey = Device.getVAPID();
+        var subscriptionData = {} ;
+        console.log("subscribing push notification sw " + publicVapidKey);
+        swRegistration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: this.urlBase64ToUint8Array(publicVapidKey)
+        }).then(subscription =>  {
+            console.log("pushManager Subscription data: ", subscription.toJSON());
+            console.log("applicationserverykey",subscription.options.applicationServerKey);
+            subscriptionData = JSON.parse(JSON.stringify(subscription));
+            subscriptionData.endpoint = subscriptionData.endpoint.split('/').pop();
+            subscriptionData.browser = 'Kaios';
+            this._startuploadPushToken(subscriptionData);
+            var curTs = new Date().getTime();
+            curTs = curTs/1000;
+            Device.setLastTokenUpdateTs(curTs);
+        });
+    }
+
+    urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding)
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+  _startuploadPushToken (subscriptionData) {
+      subscriptionData.type = Constants.EVENT_TYPES.DATA;
+      this.processEvent(subscriptionData);
   }
   _getEventsMap() {
     if (!_eventsMap) {
