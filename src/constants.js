@@ -3,6 +3,7 @@ export default {
   CHARGED_ID: 'chargedId',
   ECOOKIE_PREFIX: 'CT_E',
   GCOOKIE_NAME: 'CT_G',
+  VAPID_KEY: 'CT_VKEY',
   KCOOKIE_NAME: 'CT_K',
   PCOOKIE_PREFIX: 'CT_P',
   SEQCOOKIE_PREFIX: 'CT_SEQ',
@@ -17,6 +18,7 @@ export default {
     PROFILE: "profile",
     PAGE: "page",
     PING: "ping",
+    DATA: "data"
   },
   IDENTITY_TYPES: {
     IDENTITY: "Identity",
@@ -24,4 +26,6 @@ export default {
     FBID: "FBID",
     GPID: "GPID",
   },
+  TOKEN_UPDATE_TS_KEY: 'CT_TK_TS',
+  KAIOS_NOTIFICATION_STATE:'CT_KOS_S'
 };

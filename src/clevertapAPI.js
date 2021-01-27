@@ -173,6 +173,13 @@ export default class CleverTapAPI {
       this.processingUserLoginKey = null;
     });
   }
+  unregisterToken(oldguid){
+      var data = {};
+      data.type = Constants.EVENT_TYPES.DATA;
+      data.g = oldguid;
+      data.action = "unregister";
+      this.queueManager._unregisterTokenApiCall(data);
+  }
   _newSession() {
     this.session = new Session(Object.assign({}, this.options));
     this._generateLaunchEvents();

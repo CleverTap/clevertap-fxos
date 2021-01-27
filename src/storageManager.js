@@ -22,6 +22,28 @@ export default class StorageManager {
     }
     Utils.removeFromStorage(key);
   }
+  static getVAPIDKey() {
+      const accountId = Account.getAccountId();
+      if (!accountId)  {
+          return null;
+      }
+      return `${Constants.VAPID_KEY}_${accountId}`;
+  }
+  static getTokenUpdateTsKey(){
+      const accountId = Account.getAccountId();
+      if (!accountId)  {
+          return null;
+      }
+      return `${Constants.TOKEN_UPDATE_TS_KEY}_${accountId}`;
+  }
+    static getKaiosNotificationStateKey(){
+        const accountId = Account.getAccountId();
+        if (!accountId)  {
+            return null;
+        }
+        return `${Constants.KAIOS_NOTIFICATION_STATE}_${accountId}`;
+    }
+
   static getGUIDKey() {
     const accountId = Account.getAccountId();
     if (!accountId)  {

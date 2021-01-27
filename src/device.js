@@ -53,4 +53,41 @@ export default class Device {
     Utils.log.debug(`Generating Device ID: ${_g}`);
     Device.setGUID(_g);
   }
+   static setVAPID(vapid) {
+      const VAPIDKey = StorageManager.getVAPIDKey();
+      if (vapid === null) {
+          StorageManager.remove(VAPIDKey);
+      } else {
+          StorageManager.save(VAPIDKey, vapid);
+      }
+  }
+    static getVAPID() {
+            const VAPIDKey = StorageManager.getVAPIDKey();
+            var _vapid = StorageManager.read(VAPIDKey);
+            return _vapid;
+    }
+     static setLastTokenUpdateTs(curTs) {
+      const tsKey = StorageManager.getTokenUpdateTsKey();
+      StorageManager.save(tsKey,curTs);
+    }
+     static getLastTokenUpdateTs() {
+        const tsKey = StorageManager.getTokenUpdateTsKey();
+        var ts = StorageManager.read(tsKey);
+        if(ts === null){
+            return new Date().getTime();
+        }
+     return ts;
+    }
+    static getKaiOsNotificationState(){
+        const _key = StorageManager.getKaiosNotificationStateKey();
+        var notificaionState = StorageManager.read(_key);
+        if(!notificaionState) {
+            return false;
+        }
+        return notificaionState;
+    }
+    static setKaiOsNotificationState(state){
+        const _key = StorageManager.getKaiosNotificationStateKey();
+        StorageManager.save(_key,state);
+    }
 }
