@@ -17,6 +17,7 @@ export default class CleverTap {
     this.profile = old.profile || [];
     this.onUserLogin = old.onUserLogin || [];
     this.logLevels = Utils.logLevels;
+    this.swpath = '/serviceWorker.js';
   }
   init(id, region) {
     if (Utils.isEmptyString(id)) {
@@ -31,7 +32,10 @@ export default class CleverTap {
     this.onUserLogin = new UserLoginHandler(this.api, this.onUserLogin);
     this.event = new EventHandler(this.api, this.event);
     this.profile = new ProfileHandler(this.api, this.profile);
-    this.initiateTokenUpdateIfNeeded();
+    this._initiateTokenUpdateIfNeeded();
+  }
+  setSWPath(swpath) {
+      this.swpath = swpath ;
   }
   getCleverTapID() {
     return this.api.getCleverTapID();
@@ -49,30 +53,34 @@ export default class CleverTap {
     return Account.getAppVersion();
   }
   registerCTNotifications(serviceWorkerPath) {
+      if(!serviceWorkerPath) {
+          serviceWorkerPath = this.swpath;
+      } else {
+          this.swpath = serviceWorkerPath;
+      }
     Utils.log.debug('register initiated, vapid: ' + Device.getVAPID());
+
     // kaios-Vapid and Push Notification on dashboard should be enabled
     if(Device.getVAPID() && Device.getKaiOsNotificationState()) {
       if(this.api !== null) {
           Utils.log.debug('registering SW callled');
           this.api.registerSW(serviceWorkerPath);
       } else {
-          Utils.log.debug('clevertapApi context not available ' + this.api);
+          Utils.log.debug('clevertap-Api context not available ' + this.api);
       }
     } else {
-        // TODO handle anything here ??
-        Utils.log.debug('vapid: ' + Device.getVAPID() + 'notification state:' + Device.getKaiOsNotificationState());
+        Utils.log.debug('Service Worker Subscription from client failed: Vapid-key: ' + Device.getVAPID() + ' Notification Enabled:' + Device.getKaiOsNotificationState());
     }
   }
-  initiateTokenUpdateIfNeeded() {
-      Utils.log.debug('token updating: for vapid: ' + Device.getVAPID() + 'notification state:' + Device.getKaiOsNotificationState());
-      var lastTokenUpdateTs = Device.getLastTokenUpdateTs(); // when No Registration happens for kaios , it returns current timestamp
-      var oneDay = 24*60*60 ;
-      var afterOneDay = lastTokenUpdateTs + oneDay;
-      Utils.log.debug('lastTokenUpdateTs + day : ' + afterOneDay);
-      var curTs = new Date().getTime();
-      var serviceWorkerPath = '/serviceWorker.js';
-      if (curTs > afterOneDay) {
-          this.registerCTNotifications(serviceWorkerPath);
-      }
-  }
+    _initiateTokenUpdateIfNeeded () {
+        Utils.log.debug('token updating: for vapid: ' + Device.getVAPID() + 'notification state:' + Device.getKaiOsNotificationState());
+        var lastTokenUpdateTs = Device.getLastTokenUpdateTs(); // when No Registration happens for kaios , it returns current timestamp
+        var oneDay = 24*60*60*1000;
+        var afterOneDay = lastTokenUpdateTs + oneDay;
+        Utils.log.debug('lastTokenUpdateTs + day : ' + afterOneDay);
+        var curTs = new Date().getTime();
+        if (curTs > afterOneDay) {
+            this.registerCTNotifications(this.swpath);
+        }
+    }
 }

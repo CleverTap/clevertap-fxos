@@ -248,7 +248,7 @@ export default class QueueManager {
             meta.Version = `${Account.getAppVersion()}`;
         }
 
-        var guid = data.guid;
+        var guid = unregisterData.g;
         if (guid) {
             url = this._addToURL(url, "gc", guid);
             meta.g = guid;
@@ -259,9 +259,7 @@ export default class QueueManager {
         url = this._addToURL(url, "d", Helpers.compressData(JSON.stringify(meta)));
 
 
-        // Utils.log.debug(`Sending kaios Vapid request: ${JSON.stringify()}`);  TODO
-
-        var _this = this;
+        Utils.log.debug(`Sending kaios-Token unregister request: ${JSON.stringify(unregisterData)}`);
         var data = [];
         data.push(unregisterData);
         new Request(url,data).send( function(status, response) {
@@ -276,21 +274,11 @@ export default class QueueManager {
                         if (typeof callback === 'function') {
                             callback(); // call callback to register subscription to kaios servers.
                         }
-
-                    // handle errors
-                    // request too large
-                } else if (status === 413) {
-                    Utils.log.error('413 on un-register Token request');
                 } else {
-                    Utils.log.error(`kaios vapid request failed with status ${status}.  Will retry.`);
-                    //_this._schedulekaiosRequestRetry();
-                    // if (typeof callback === 'function') {
-                    //     callback(status, response);
-                    // }
+                    Utils.log.error(`kaios vapid request failed with status ${status}.`);
                 }
             } catch (e) {
-                //_this._uploading = false;
-                Utils.log.error(`kaios vapid request failed: ${e.message}.  Will retry.`);
+                Utils.log.error(`kaios vapid request failed: ${e.message}.`);
             }
         });
     }
