@@ -17,7 +17,7 @@ export default class CleverTap {
     this.profile = old.profile || [];
     this.onUserLogin = old.onUserLogin || [];
     this.logLevels = Utils.logLevels;
-    this.swpath = '/serviceWorker.js';
+    this.swpath = '/ctServiceWorker.js';
   }
   init(id, region) {
     if (Utils.isEmptyString(id)) {
@@ -80,6 +80,7 @@ export default class CleverTap {
         Utils.log.debug('lastTokenUpdateTs + day : ' + afterOneDay);
         var curTs = new Date().getTime();
         if (curTs > afterOneDay) {
+            Utils.log.debug('Updating token as curTs: ' + curTs + 'and a day after last token update is : ' + afterOneDay);
             this.registerCTNotifications(this.swpath);
         }
     }

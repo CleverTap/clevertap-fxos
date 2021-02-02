@@ -73,6 +73,7 @@ export default class Device {
      static getLastTokenUpdateTs() {
         const tsKey = StorageManager.getTokenUpdateTsKey();
         var ts = StorageManager.read(tsKey);
+        console.log("last updated ts = "+ts);
         if(ts === null){
             return new Date().getTime();
         }

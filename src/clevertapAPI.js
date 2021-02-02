@@ -220,7 +220,6 @@ export default class CleverTapAPI {
                 });
         } else {
             console.warn('Push messaging is not supported');
-            // pushButton.textContent = 'Push Not Supported';
         }
     }
     triggerPushSubscription(swRegistration) {
@@ -238,7 +237,6 @@ export default class CleverTapAPI {
             subscriptionData.browser = 'Kaios';
             this._startuploadPushToken(subscriptionData);
             var curTs = new Date().getTime();
-            curTs = curTs/1000;
             Device.setLastTokenUpdateTs(curTs);
         });
     }
