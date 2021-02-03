@@ -17,7 +17,7 @@ export default class CleverTap {
     this.profile = old.profile || [];
     this.onUserLogin = old.onUserLogin || [];
     this.logLevels = Utils.logLevels;
-    this.swpath = '/ctServiceWorker.js';
+    this.swpath = '/serviceWorker.js';
   }
   init(id, region) {
     if (Utils.isEmptyString(id)) {
