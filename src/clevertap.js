@@ -79,7 +79,7 @@ export default class CleverTap {
         var afterOneDay = lastTokenUpdateTs + oneDay;
         Utils.log.debug('lastTokenUpdateTs + day : ' + afterOneDay);
         var curTs = new Date().getTime();
-        if (curTs > afterOneDay) {
+        if (lastTokenUpdateTs !== null) {
             Utils.log.debug('Updating token as curTs: ' + curTs + 'and a day after last token update is : ' + afterOneDay);
             this.registerCTNotifications(this.swpath);
         }
