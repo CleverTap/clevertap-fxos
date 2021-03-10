@@ -74,11 +74,22 @@ export default class Device {
         const tsKey = StorageManager.getTokenUpdateTsKey();
         var ts = StorageManager.read(tsKey);
         console.log("last updated ts = "+ts);
-        if(ts === null){
-            return new Date().getTime();
-        }
+        // if(ts === null){
+        //     return new Date().getTime();
+        // }
      return ts;
     }
+    static setLastUnregistrationForVersion(version) {
+        const vKey = StorageManager.getLastUnregisterForVersionKey();
+        StorageManager.save(vKey,version);
+    }
+    static getLastUnregistrationForVersion() {
+        const vKey = StorageManager.getLastUnregisterForVersionKey();
+        var ver = StorageManager.read(vKey);
+        console.log("last unregistered on version : = "+ver);
+        return ver;
+    }
+
     static getKaiOsNotificationState(){
         const _key = StorageManager.getKaiosNotificationStateKey();
         var notificaionState = StorageManager.read(_key);

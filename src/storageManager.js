@@ -36,6 +36,14 @@ export default class StorageManager {
       }
       return `${Constants.TOKEN_UPDATE_TS_KEY}_${accountId}`;
   }
+    static getLastUnregisterForVersionKey(){
+        const accountId = Account.getAccountId();
+        if (!accountId)  {
+            return null;
+        }
+        return `${Constants.SW_UNREGISTER_FOR_VERSION}_${accountId}`;
+    }
+
     static getKaiosNotificationStateKey(){
         const accountId = Account.getAccountId();
         if (!accountId)  {

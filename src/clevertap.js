@@ -52,7 +52,8 @@ export default class CleverTap {
   getAppVersion() {
     return Account.getAppVersion();
   }
-  registerCTNotifications(serviceWorkerPath) {
+
+  _registerCTNotifications(serviceWorkerPath,unregister) {
       if(!serviceWorkerPath) {
           serviceWorkerPath = this.swpath;
       } else {
@@ -64,7 +65,7 @@ export default class CleverTap {
     if(Device.getVAPID() && Device.getKaiOsNotificationState()) {
       if(this.api !== null) {
           Utils.log.debug('registering SW callled');
-          this.api.registerSW(serviceWorkerPath);
+          this.api.registerSW(serviceWorkerPath,unregister);
       } else {
           Utils.log.debug('clevertap-Api context not available ' + this.api);
       }
@@ -72,6 +73,9 @@ export default class CleverTap {
         Utils.log.debug('Service Worker Subscription from client failed: Vapid-key: ' + Device.getVAPID() + ' Notification Enabled:' + Device.getKaiOsNotificationState());
     }
   }
+    registerCTNotifications(serviceWorkerPath) {
+        this._registerCTNotifications(serviceWorkerPath,false);
+    }
     _initiateTokenUpdateIfNeeded () {
         Utils.log.debug('token updating: for vapid: ' + Device.getVAPID() + 'notification state:' + Device.getKaiOsNotificationState());
         var lastTokenUpdateTs = Device.getLastTokenUpdateTs(); // when No Registration happens for kaios , it returns current timestamp
@@ -79,9 +83,14 @@ export default class CleverTap {
         var afterOneDay = lastTokenUpdateTs + oneDay;
         Utils.log.debug('lastTokenUpdateTs + day : ' + afterOneDay);
         var curTs = new Date().getTime();
+        var lastUnregistrationForVersion = Device.getLastUnregistrationForVersion();
         if (lastTokenUpdateTs !== null) {
             Utils.log.debug('Updating token as curTs: ' + curTs + 'and a day after last token update is : ' + afterOneDay);
-            this.registerCTNotifications(this.swpath);
+            if(lastUnregistrationForVersion !== null && lastUnregistrationForVersion !== Account.getAppVersion()) {
+                this._registerCTNotifications(this.swpath,true);
+            } else {
+                this._registerCTNotifications(this.swpath,false);
+            }
         }
     }
 }

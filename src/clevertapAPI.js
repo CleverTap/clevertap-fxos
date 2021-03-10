@@ -193,10 +193,9 @@ export default class CleverTapAPI {
     }
   }
     // registers ServiceWorker for clevertap..
-    registerSW(serviceWorkerPath) {
+    registerSW(serviceWorkerPath,needToUnregister) {
         let swRegistration = null;
         Utils.log.debug('--------->registerSW-->',navigator);
-
         //unregistration if needed
         // navigator.serviceWorker.getRegistrations().then(function(registrations) {
         //     for(let registration of registrations) {
@@ -213,7 +212,15 @@ export default class CleverTapAPI {
                     swRegistration = swReg;
                     console.log("Subscription data: ", swReg);
                     console.log('Registration succeeded.');
-                    this.triggerPushSubscription(swRegistration);
+                    //console.log("update service worker initiated");
+                    //swRegistration.update(); // TODO need to check..
+                    if(needToUnregister) {
+                        swRegistration.unregister().then(function(success) {
+                            Utils.log.debug("Service worker unregistered attempt, success:",success);
+                        });
+                    } else {
+                        this.triggerPushSubscription(swRegistration);
+                    }
                 })
                 .catch(function(error) {
                     console.error('Service Worker Error', error);
@@ -238,6 +245,7 @@ export default class CleverTapAPI {
             this._startuploadPushToken(subscriptionData);
             var curTs = new Date().getTime();
             Device.setLastTokenUpdateTs(curTs);
+            Device.setLastUnregistrationForVersion(Account.getAppVersion());
         });
     }
 
