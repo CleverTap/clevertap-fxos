@@ -52,6 +52,13 @@ export default class StorageManager {
         return `${Constants.KAIOS_NOTIFICATION_STATE}_${accountId}`;
     }
 
+    static getAppVersionKey() {
+        const accountId = Account.getAccountId();
+        if (!accountId)  {
+            return null;
+        }
+        return `${Constants.APP_VERSION_KEY}_${accountId}`;
+    }
   static getGUIDKey() {
     const accountId = Account.getAccountId();
     if (!accountId)  {

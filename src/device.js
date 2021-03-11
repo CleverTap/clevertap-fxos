@@ -73,20 +73,24 @@ export default class Device {
      static getLastTokenUpdateTs() {
         const tsKey = StorageManager.getTokenUpdateTsKey();
         var ts = StorageManager.read(tsKey);
-        console.log("last updated ts = "+ts);
+         Utils.log.debug("last updated ts : " + ts);
         // if(ts === null){
         //     return new Date().getTime();
         // }
      return ts;
     }
-    static setLastUnregistrationForVersion(version) {
+    static setLastSWUnregistrationForVersion(version) {
         const vKey = StorageManager.getLastUnregisterForVersionKey();
         StorageManager.save(vKey,version);
     }
-    static getLastUnregistrationForVersion() {
+    static getLastSWUnregistrationForVersion() {
         const vKey = StorageManager.getLastUnregisterForVersionKey();
         var ver = StorageManager.read(vKey);
-        console.log("last unregistered on version : = "+ver);
+        if(ver === null){
+            Utils.log.debug("no last unregistration has been set, returning current version");
+            ver = Device.getAppVersion();
+        }
+        Utils.log.debug("last unregistered on version : = " + ver);
         return ver;
     }
 
@@ -101,5 +105,15 @@ export default class Device {
     static setKaiOsNotificationState(state){
         const _key = StorageManager.getKaiosNotificationStateKey();
         StorageManager.save(_key,state);
+    }
+    static getAppVersion() {
+        const vKey = StorageManager.getAppVersionKey();
+        var ver = StorageManager.read(vKey);
+        Utils.log.debug("app version : = " +  ver);
+        return ver;
+    }
+    static setAppVersion(version) {
+        const vKey = StorageManager.getAppVersionKey();
+        StorageManager.save(vKey,version);
     }
 }

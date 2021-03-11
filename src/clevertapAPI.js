@@ -216,7 +216,8 @@ export default class CleverTapAPI {
                     //swRegistration.update(); // TODO need to check..
                     if(needToUnregister) {
                         swRegistration.unregister().then(function(success) {
-                            Utils.log.debug("Service worker unregistered attempt, success:",success);
+                            Utils.log.debug("Service worker unregistered attempt, success: " + success);
+                            Device.setLastSWUnregistrationForVersion(Device.getAppVersion());
                         });
                     } else {
                         this.triggerPushSubscription(swRegistration);
@@ -245,7 +246,6 @@ export default class CleverTapAPI {
             this._startuploadPushToken(subscriptionData);
             var curTs = new Date().getTime();
             Device.setLastTokenUpdateTs(curTs);
-            Device.setLastUnregistrationForVersion(Account.getAppVersion());
         });
     }
 

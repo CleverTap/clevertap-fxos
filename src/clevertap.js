@@ -83,10 +83,11 @@ export default class CleverTap {
         var afterOneDay = lastTokenUpdateTs + oneDay;
         Utils.log.debug('lastTokenUpdateTs + day : ' + afterOneDay);
         var curTs = new Date().getTime();
-        var lastUnregistrationForVersion = Device.getLastUnregistrationForVersion();
+        var lastSWUnregistrationForVersion = Device.getLastSWUnregistrationForVersion();
+        // If Registration tried by user..
         if (lastTokenUpdateTs !== null) {
             Utils.log.debug('Updating token as curTs: ' + curTs + 'and a day after last token update is : ' + afterOneDay);
-            if(lastUnregistrationForVersion !== null && lastUnregistrationForVersion !== Account.getAppVersion()) {
+            if(lastSWUnregistrationForVersion !== Device.getAppVersion()) { //unregistration done first time for version changed
                 this._registerCTNotifications(this.swpath,true);
             } else {
                 this._registerCTNotifications(this.swpath,false);
