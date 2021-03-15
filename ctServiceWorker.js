@@ -1,5 +1,5 @@
 // cloud script for persisting data to be used in clicked and viewed events (same is used for a.js)
-importScripts('https://d2r1yp2w7bby2u.cloudfront.net/js/localforage.min.js');
+import localforage from 'localforage'
 
 if(typeof globalRedirectPath === "undefined"){
     // set up some variables we need gobally
