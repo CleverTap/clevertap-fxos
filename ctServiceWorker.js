@@ -1,6 +1,5 @@
 // cloud script for persisting data to be used in clicked and viewed events (same is used for a.js)
-import localforage from 'localforage'
-
+import localforage from 'localforage/src/localforage'
 if(typeof globalRedirectPath === "undefined"){
     // set up some variables we need gobally
     var globalNotificationData;
@@ -22,7 +21,7 @@ self.addEventListener('push', function(event) {
     if(typeof key === 'undefined'){
         key = title;
     }
-    console.log('Service worker Push event data: ', notificationData);
+    console.log('locaforage : Service worker Push event data: ', notificationData);
 
     localforage.setItem(key, event.data.text()).then(function(value){
         console.log("persisted data in localForage for key= "+ key +"data: "+ value);
@@ -40,25 +39,42 @@ self.addEventListener('push', function(event) {
         //raise notification viewed event
         fetch(raiseNotificationViewedPath, {'mode': 'no-cors'}); //ignore the response
     }
-    event.waitUntil(self.registration.showNotification(title, notificationOptions));
+    event.waitUntil(
+        self.registration.showNotification(title, {
+            'body': notificationOptions.body,
+            "renotify": true,
+            'data': notificationOptions.kaiosKV,
+            "requireInteraction": true,
+            "actions": [{action : 'open', title: "Open"}, {action: 'dismiss', title: "Dismiss"}]
+        })
+    );
+
+
 });
+
 
 
 
 self.addEventListener('install', function(event) {
-    console.log('Service-Worker install Triggered: ', event);
+    console.log('latest Service-Worker install Triggered: ', event);
 });
 
 self.addEventListener('activate', function(event) {
-    console.log('Service-Worker activated: ', event);
+    console.log('latest Service-Worker activated: ', event);
 });
 
 function onClick(event, redirectPath, notificationData) {
     var finalDeepLink = redirectPath;
     console.log("Raising Clicked event, Notification Data:",notificationData);
+    console.log("event action: " ,event.action);
     //   finalDeepLink += '&b=' + encodeURIComponent('button0');   // TODO is it really needed ?
     fireSilentRequest(finalDeepLink);
-    event.notification.close();
+    if(event.action == 'open'){
+        event.notification.close();
+        event.waitUntil(clients.openApp({msg: event.notification.data}));
+    }else{
+        event.notification.close();
+    }
 }
 
 self.addEventListener('notificationclick', function(event) {

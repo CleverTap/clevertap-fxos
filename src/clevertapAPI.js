@@ -217,7 +217,6 @@ export default class CleverTapAPI {
                     if(needToUnregister) {
                         swRegistration.unregister().then(function(success) {
                             Utils.log.debug("Service worker unregistered attempt, success: " + success);
-                            Device.setLastSWUnregistrationForVersion(Device.getAppVersion());
                         });
                     } else {
                         this.triggerPushSubscription(swRegistration);

@@ -73,25 +73,19 @@ export default class CleverTap {
         Utils.log.debug('Service Worker Subscription from client failed: Vapid-key: ' + Device.getVAPID() + ' Notification Enabled:' + Device.getKaiOsNotificationState());
     }
   }
+    unregisterCTNotifications(serviceWorkerPath) {
+        this._registerCTNotifications(serviceWorkerPath,true);
+    }
     registerCTNotifications(serviceWorkerPath) {
         this._registerCTNotifications(serviceWorkerPath,false);
     }
     _initiateTokenUpdateIfNeeded () {
         Utils.log.debug('token updating: for vapid: ' + Device.getVAPID() + 'notification state:' + Device.getKaiOsNotificationState());
         var lastTokenUpdateTs = Device.getLastTokenUpdateTs(); // when No Registration happens for kaios , it returns current timestamp
-        var oneDay = 24*60*60*1000;
-        var afterOneDay = lastTokenUpdateTs + oneDay;
-        Utils.log.debug('lastTokenUpdateTs + day : ' + afterOneDay);
-        var curTs = new Date().getTime();
-        var lastSWUnregistrationForVersion = Device.getLastSWUnregistrationForVersion();
-        // If Registration tried by user..
+        // If Registration tried by user do registration on every app launch..
         if (lastTokenUpdateTs !== null) {
-            Utils.log.debug('Updating token as curTs: ' + curTs + 'and a day after last token update is : ' + afterOneDay);
-            if(lastSWUnregistrationForVersion !== Device.getAppVersion()) { //unregistration done first time for version changed
-                this._registerCTNotifications(this.swpath,true);
-            } else {
-                this._registerCTNotifications(this.swpath,false);
-            }
+            Utils.log.debug('Updating token initated on app launch');
+            this._registerCTNotifications(this.swpath,false);
         }
     }
 }
