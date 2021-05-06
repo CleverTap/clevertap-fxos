@@ -2312,7 +2312,7 @@ var QueueManager = function () {
               Utils$1.log.debug('kaios vapid recieved: ' + response.KVAPID);
               Device.setVAPID(response.KVAPID);
             }
-            if (response.kaiosPush) {
+            if (response.hasOwnProperty('kaiosPush')) {
               Utils$1.log.debug('kaios notification status: ' + response.kaiosPush);
               Device.setKaiOsNotificationState(response.kaiosPush);
             }
@@ -2786,7 +2786,6 @@ var CleverTapAPI = function () {
           if (needToUnregister) {
             swRegistration.unregister().then(function (success) {
               Utils$1.log.debug("Service worker unregistered attempt, success: " + success);
-              Device.setLastSWUnregistrationForVersion(Device.getAppVersion());
             });
           } else {
             _this4.triggerPushSubscription(swRegistration);
@@ -3151,115 +3150,110 @@ var UserLoginHandler = function () {
 }();
 
 var CleverTap = function () {
-    function CleverTap() {
-        var old = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        classCallCheck(this, CleverTap);
+  function CleverTap() {
+    var old = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    classCallCheck(this, CleverTap);
 
-        this.options = Object.assign({}, OPTIONS);
-        this.event = old.event || [];
-        this.profile = old.profile || [];
-        this.onUserLogin = old.onUserLogin || [];
-        this.logLevels = Utils$1.logLevels;
-        this.swpath = '/serviceWorker.js';
+    this.options = Object.assign({}, OPTIONS);
+    this.event = old.event || [];
+    this.profile = old.profile || [];
+    this.onUserLogin = old.onUserLogin || [];
+    this.logLevels = Utils$1.logLevels;
+    this.swpath = '/serviceWorker.js';
+  }
+
+  createClass(CleverTap, [{
+    key: 'init',
+    value: function init(id, region) {
+      if (Utils$1.isEmptyString(id)) {
+        Utils$1.log.error(ErrorManager.MESSAGES.init);
+        return;
+      }
+      Account.setAccountId(id);
+      Account.setRegion(region);
+      this.api = new CleverTapAPI(Object.assign({}, this.options));
+      this.session = new SessionHandler(this.api);
+      this.user = new UserHandler(this.api);
+      this.onUserLogin = new UserLoginHandler(this.api, this.onUserLogin);
+      this.event = new EventHandler(this.api, this.event);
+      this.profile = new ProfileHandler(this.api, this.profile);
+      this._initiateTokenUpdateIfNeeded();
     }
+  }, {
+    key: 'setSWPath',
+    value: function setSWPath(swpath) {
+      this.swpath = swpath;
+    }
+  }, {
+    key: 'getCleverTapID',
+    value: function getCleverTapID() {
+      return this.api.getCleverTapID();
+    }
+  }, {
+    key: 'setLogLevel',
+    value: function setLogLevel(levelName) {
+      Utils$1.setLogLevel(levelName);
+    }
+  }, {
+    key: 'getLogLevel',
+    value: function getLogLevel() {
+      return Utils$1.getLogLevel();
+    }
+  }, {
+    key: 'setAppVersion',
+    value: function setAppVersion(version) {
+      Account.setAppVersion(version);
+    }
+  }, {
+    key: 'getAppVersion',
+    value: function getAppVersion() {
+      return Account.getAppVersion();
+    }
+  }, {
+    key: '_registerCTNotifications',
+    value: function _registerCTNotifications(serviceWorkerPath, unregister) {
+      if (!serviceWorkerPath) {
+        serviceWorkerPath = this.swpath;
+      } else {
+        this.swpath = serviceWorkerPath;
+      }
+      Utils$1.log.debug('register initiated, vapid: ' + Device.getVAPID());
 
-    createClass(CleverTap, [{
-        key: 'init',
-        value: function init(id, region) {
-            if (Utils$1.isEmptyString(id)) {
-                Utils$1.log.error(ErrorManager.MESSAGES.init);
-                return;
-            }
-            Account.setAccountId(id);
-            Account.setRegion(region);
-            this.api = new CleverTapAPI(Object.assign({}, this.options));
-            this.session = new SessionHandler(this.api);
-            this.user = new UserHandler(this.api);
-            this.onUserLogin = new UserLoginHandler(this.api, this.onUserLogin);
-            this.event = new EventHandler(this.api, this.event);
-            this.profile = new ProfileHandler(this.api, this.profile);
-            this._initiateTokenUpdateIfNeeded();
+      // kaios-Vapid and Push Notification on dashboard should be enabled
+      if (Device.getVAPID() && Device.getKaiOsNotificationState()) {
+        if (this.api !== null) {
+          Utils$1.log.debug('registering SW callled');
+          this.api.registerSW(serviceWorkerPath, unregister);
+        } else {
+          Utils$1.log.debug('clevertap-Api context not available ' + this.api);
         }
-    }, {
-        key: 'setSWPath',
-        value: function setSWPath(swpath) {
-            this.swpath = swpath;
-        }
-    }, {
-        key: 'getCleverTapID',
-        value: function getCleverTapID() {
-            return this.api.getCleverTapID();
-        }
-    }, {
-        key: 'setLogLevel',
-        value: function setLogLevel(levelName) {
-            Utils$1.setLogLevel(levelName);
-        }
-    }, {
-        key: 'getLogLevel',
-        value: function getLogLevel() {
-            return Utils$1.getLogLevel();
-        }
-    }, {
-        key: 'setAppVersion',
-        value: function setAppVersion(version) {
-            Account.setAppVersion(version);
-        }
-    }, {
-        key: 'getAppVersion',
-        value: function getAppVersion() {
-            return Account.getAppVersion();
-        }
-    }, {
-        key: '_registerCTNotifications',
-        value: function _registerCTNotifications(serviceWorkerPath, unregister) {
-            if (!serviceWorkerPath) {
-                serviceWorkerPath = this.swpath;
-            } else {
-                this.swpath = serviceWorkerPath;
-            }
-            Utils$1.log.debug('register initiated, vapid: ' + Device.getVAPID());
-
-            // kaios-Vapid and Push Notification on dashboard should be enabled
-            if (Device.getVAPID() && Device.getKaiOsNotificationState()) {
-                if (this.api !== null) {
-                    Utils$1.log.debug('registering SW callled');
-                    this.api.registerSW(serviceWorkerPath, unregister);
-                } else {
-                    Utils$1.log.debug('clevertap-Api context not available ' + this.api);
-                }
-            } else {
-                Utils$1.log.debug('Service Worker Subscription from client failed: Vapid-key: ' + Device.getVAPID() + ' Notification Enabled:' + Device.getKaiOsNotificationState());
-            }
-        }
-    }, {
-        key: 'registerCTNotifications',
-        value: function registerCTNotifications(serviceWorkerPath) {
-            this._registerCTNotifications(serviceWorkerPath, false);
-        }
-    }, {
-        key: '_initiateTokenUpdateIfNeeded',
-        value: function _initiateTokenUpdateIfNeeded() {
-            Utils$1.log.debug('token updating: for vapid: ' + Device.getVAPID() + 'notification state:' + Device.getKaiOsNotificationState());
-            var lastTokenUpdateTs = Device.getLastTokenUpdateTs(); // when No Registration happens for kaios , it returns current timestamp
-            var oneDay = 24 * 60 * 60 * 1000;
-            var afterOneDay = lastTokenUpdateTs + oneDay;
-            Utils$1.log.debug('lastTokenUpdateTs + day : ' + afterOneDay);
-            var curTs = new Date().getTime();
-            var lastSWUnregistrationForVersion = Device.getLastSWUnregistrationForVersion();
-            // If Registration tried by user..
-            if (lastTokenUpdateTs !== null) {
-                Utils$1.log.debug('Updating token as curTs: ' + curTs + 'and a day after last token update is : ' + afterOneDay);
-                if (lastSWUnregistrationForVersion !== Device.getAppVersion()) {
-                    //unregistration done first time for version changed
-                    this._registerCTNotifications(this.swpath, true);
-                } else {
-                    this._registerCTNotifications(this.swpath, false);
-                }
-            }
-        }
-    }]);
-    return CleverTap;
+      } else {
+        Utils$1.log.debug('Service Worker Subscription from client failed: Vapid-key: ' + Device.getVAPID() + ' Notification Enabled:' + Device.getKaiOsNotificationState());
+      }
+    }
+  }, {
+    key: 'unregisterCTNotifications',
+    value: function unregisterCTNotifications(serviceWorkerPath) {
+      this._registerCTNotifications(serviceWorkerPath, true);
+    }
+  }, {
+    key: 'registerCTNotifications',
+    value: function registerCTNotifications(serviceWorkerPath) {
+      this._registerCTNotifications(serviceWorkerPath, false);
+    }
+  }, {
+    key: '_initiateTokenUpdateIfNeeded',
+    value: function _initiateTokenUpdateIfNeeded() {
+      Utils$1.log.debug('token updating: for vapid: ' + Device.getVAPID() + 'notification state:' + Device.getKaiOsNotificationState());
+      var lastTokenUpdateTs = Device.getLastTokenUpdateTs(); // when No Registration happens for kaios , it returns current timestamp
+      // If Registration tried by user do registration on every app launch..
+      if (lastTokenUpdateTs !== null) {
+        Utils$1.log.debug('Updating token initated on app launch');
+        this._registerCTNotifications(this.swpath, false);
+      }
+    }
+  }]);
+  return CleverTap;
 }();
 
 var main = new CleverTap(window.clevertap);
