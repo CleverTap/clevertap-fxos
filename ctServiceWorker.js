@@ -71,7 +71,7 @@ function onClick(event, redirectPath, notificationData) {
     fireSilentRequest(finalDeepLink);
     if(event.action == 'open'){
         event.notification.close();
-        event.waitUntil(clients.openApp({msg: event.notification.data}));
+        event.waitUntil(clients.openApp({msg: JSON.stringify(event.notification.data)}));
     }else{
         event.notification.close();
     }
