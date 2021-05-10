@@ -4,6 +4,57 @@
 	(global.clevertap = factory());
 }(this, (function () { 'use strict';
 
+var Constants = {
+  APP_LAUNCHED: "App Launched",
+  CHARGED_ID: 'chargedId',
+  ECOOKIE_PREFIX: 'CT_E',
+  GCOOKIE_NAME: 'CT_G',
+  VAPID_KEY: 'CT_VKEY',
+  KCOOKIE_NAME: 'CT_K',
+  PCOOKIE_PREFIX: 'CT_P',
+  SEQCOOKIE_PREFIX: 'CT_SEQ',
+  SCOOKIE_PREFIX: 'CT_S',
+  EV_COOKIE: 'CT_EV',
+  PR_COOKIE: 'CT_PR',
+  ARP_COOKIE: 'CT_ARP',
+  UNDEFINED: 'undefined',
+  PING_FREQ_IN_MILLIS: 2 * 60 * 1000, // 2 mins
+  EVENT_TYPES: {
+    EVENT: "event",
+    PROFILE: "profile",
+    PAGE: "page",
+    PING: "ping",
+    DATA: "data"
+  },
+  IDENTITY_TYPES: {
+    IDENTITY: "Identity",
+    EMAIL: "Email",
+    FBID: "FBID",
+    GPID: "GPID"
+  },
+  TOKEN_UPDATE_TS_KEY: 'CT_TK_TS',
+  KAIOS_NOTIFICATION_STATE: 'CT_KOS_S',
+  SW_UNREGISTER_FOR_VERSION: 'CT_SW_VR',
+  APP_VERSION_KEY: "CT_AP_VR"
+};
+
+var dataNotSent = 'This property has been ignored.';
+
+var ErrorMessages = {
+  init: 'Invalid account id',
+  event: 'Event structure not valid. Unable to process event',
+  gender: 'Gender value should be either M or F. ' + dataNotSent,
+  employed: 'Employed value should be either Y or N. ' + dataNotSent,
+  married: 'Married value should be either Y or N. ' + dataNotSent,
+  education: 'Education value should be either School, College or Graduate. ' + dataNotSent,
+  age: 'Age value should be a number. ' + dataNotSent,
+  dob: 'DOB value should be a Date Object',
+  objArr: 'Expecting Object array in profile',
+  dateFormat: 'setDate(number). number should be formatted as yyyymmdd',
+  enumFormat: 'setEnum(value). value should be a string or a number',
+  phoneFormat: 'Phone number should be formatted as +[country code][number]'
+};
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
 } : function (obj) {
@@ -154,94 +205,6 @@ var createClass = function () {
     return Constructor;
   };
 }();
-
-var _accountId = null;
-var _region = null;
-var _appVersion = null;
-
-var Account = function () {
-  function Account() {
-    classCallCheck(this, Account);
-  }
-
-  createClass(Account, null, [{
-    key: "setAccountId",
-    value: function setAccountId(accountId) {
-      _accountId = accountId;
-    }
-  }, {
-    key: "getAccountId",
-    value: function getAccountId() {
-      return _accountId;
-    }
-  }, {
-    key: "setRegion",
-    value: function setRegion(region) {
-      _region = region;
-    }
-  }, {
-    key: "getRegion",
-    value: function getRegion() {
-      return _region;
-    }
-  }, {
-    key: "setAppVersion",
-    value: function setAppVersion(version) {
-      _appVersion = version;
-    }
-  }, {
-    key: "getAppVersion",
-    value: function getAppVersion() {
-      return _appVersion;
-    }
-  }]);
-  return Account;
-}();
-
-var Constants = {
-  APP_LAUNCHED: "App Launched",
-  CHARGED_ID: 'chargedId',
-  ECOOKIE_PREFIX: 'CT_E',
-  GCOOKIE_NAME: 'CT_G',
-  KCOOKIE_NAME: 'CT_K',
-  PCOOKIE_PREFIX: 'CT_P',
-  SEQCOOKIE_PREFIX: 'CT_SEQ',
-  SCOOKIE_PREFIX: 'CT_S',
-  EV_COOKIE: 'CT_EV',
-  PR_COOKIE: 'CT_PR',
-  ARP_COOKIE: 'CT_ARP',
-  UNDEFINED: 'undefined',
-  PING_FREQ_IN_MILLIS: 2 * 60 * 1000, // 2 mins
-  EVENT_TYPES: {
-    EVENT: "event",
-    PROFILE: "profile",
-    PAGE: "page",
-    PING: "ping"
-  },
-  IDENTITY_TYPES: {
-    IDENTITY: "Identity",
-    EMAIL: "Email",
-    FBID: "FBID",
-    GPID: "GPID"
-  }
-};
-
-var dataNotSent = 'This property has been ignored.';
-
-var ErrorMessages = {
-  init: 'Invalid account id',
-  event: 'Event structure not valid. Unable to process event',
-  gender: 'Gender value should be either M or F. ' + dataNotSent,
-  employed: 'Employed value should be either Y or N. ' + dataNotSent,
-  married: 'Married value should be either Y or N. ' + dataNotSent,
-  education: 'Education value should be either School, College or Graduate. ' + dataNotSent,
-  age: 'Age value should be a number. ' + dataNotSent,
-  dob: 'DOB value should be a Date Object',
-  objArr: 'Expecting Object array in profile',
-  dateFormat: 'setDate(number). number should be formatted as yyyymmdd',
-  enumFormat: 'setEnum(value). value should be a string or a number',
-  phoneFormat: 'Phone number should be formatted as +[country code][number]'
-};
 
 var _errors = [];
 
@@ -562,70 +525,188 @@ var Utils = {
     isAnonymousDevice: isAnonymousDevice
 };
 
-/* jshint bitwise: false, laxbreak: true */
-
-var GUID_PREFIX = "fx";
-var _guid = null;
-
-//see https://gist.github.com/jed/982883
-var uuid = function uuid(a) {
-  return a // if the placeholder was passed, return
-  ? ( // a random number from 0 to 15
-  a ^ // unless b is 8,
-  window.crypto.getRandomValues(new Uint8Array(1))[0] // in which case
-  % 16 // a random number from
-  >> a / 4 // 8 to 11
-  ).toString(16) // in hexadecimal
-  : ( // or otherwise a concatenated string:
-  [1e7] + // 10000000 +
-  -1e3 + // -1000 +
-  -4e3 + // -4000 +
-  -8e3 + // -80000000 +
-  -1e11 // -100000000000,
-  ).replace( // replacing
-  /[018]/g, // zeroes, ones, and eights with
-  uuid // random hex digits
-  );
-};
-
-var Device = function () {
-  function Device() {
-    classCallCheck(this, Device);
+var StorageManager = function () {
+  function StorageManager() {
+    classCallCheck(this, StorageManager);
   }
 
-  createClass(Device, null, [{
-    key: 'setGUID',
-    value: function setGUID(guid) {
-      _guid = guid;
-      var GUIDKey = StorageManager.getGUIDKey();
-      if (guid === null) {
-        StorageManager.remove(GUIDKey);
-      } else {
-        StorageManager.save(GUIDKey, guid);
+  createClass(StorageManager, null, [{
+    key: 'save',
+    value: function save(key, value) {
+      if (!key || !value) {
+        return;
       }
+      Utils.saveToStorage(key, value);
     }
   }, {
-    key: 'getGUID',
-    value: function getGUID() {
-      if (!_guid) {
-        var GUIDKey = StorageManager.getGUIDKey();
-        _guid = StorageManager.read(GUIDKey);
+    key: 'read',
+    value: function read(key) {
+      if (!key) {
+        return null;
       }
-      if (!_guid) {
-        Device.generateGUID();
-      }
-      return _guid;
+      return Utils.readFromStorage(key);
     }
   }, {
-    key: 'generateGUID',
-    value: function generateGUID() {
-      var _uuid = uuid().replace(/[-]/g, "");
-      var _g = '' + GUID_PREFIX + _uuid;
-      Utils.log.debug('Generating Device ID: ' + _g);
-      Device.setGUID(_g);
+    key: 'remove',
+    value: function remove(key) {
+      if (!key) {
+        return;
+      }
+      Utils.removeFromStorage(key);
+    }
+  }, {
+    key: 'getVAPIDKey',
+    value: function getVAPIDKey() {
+      var accountId = Account.getAccountId();
+      if (!accountId) {
+        return null;
+      }
+      return Constants.VAPID_KEY + '_' + accountId;
+    }
+  }, {
+    key: 'getTokenUpdateTsKey',
+    value: function getTokenUpdateTsKey() {
+      var accountId = Account.getAccountId();
+      if (!accountId) {
+        return null;
+      }
+      return Constants.TOKEN_UPDATE_TS_KEY + '_' + accountId;
+    }
+  }, {
+    key: 'getLastUnregisterForVersionKey',
+    value: function getLastUnregisterForVersionKey() {
+      var accountId = Account.getAccountId();
+      if (!accountId) {
+        return null;
+      }
+      return Constants.SW_UNREGISTER_FOR_VERSION + '_' + accountId;
+    }
+  }, {
+    key: 'getKaiosNotificationStateKey',
+    value: function getKaiosNotificationStateKey() {
+      var accountId = Account.getAccountId();
+      if (!accountId) {
+        return null;
+      }
+      return Constants.KAIOS_NOTIFICATION_STATE + '_' + accountId;
+    }
+  }, {
+    key: 'getAppVersionKey',
+    value: function getAppVersionKey() {
+      var accountId = Account.getAccountId();
+      if (!accountId) {
+        return null;
+      }
+      return Constants.APP_VERSION_KEY + '_' + accountId;
+    }
+  }, {
+    key: 'getGUIDKey',
+    value: function getGUIDKey() {
+      var accountId = Account.getAccountId();
+      if (!accountId) {
+        return null;
+      }
+      return Constants.GCOOKIE_NAME + '_' + accountId;
+    }
+  }, {
+    key: 'getSessionKey',
+    value: function getSessionKey() {
+      var accountId = Account.getAccountId();
+      var guid = Device.getGUID();
+      if (!accountId || !guid) {
+        return null;
+      }
+      return Constants.SCOOKIE_PREFIX + '_' + accountId + '_' + guid;
+    }
+  }, {
+    key: 'getUserEventsKey',
+    value: function getUserEventsKey() {
+      var accountId = Account.getAccountId();
+      var guid = Device.getGUID();
+      if (!accountId || !guid) {
+        return null;
+      }
+      return Constants.EV_COOKIE + '_' + accountId + '_' + guid;
+    }
+  }, {
+    key: 'getUserProfileKey',
+    value: function getUserProfileKey() {
+      var accountId = Account.getAccountId();
+      var guid = Device.getGUID();
+      if (!accountId || !guid) {
+        return null;
+      }
+      return Constants.PR_COOKIE + '_' + accountId + '_' + guid;
+    }
+  }, {
+    key: 'getSavedEventsKey',
+    value: function getSavedEventsKey() {
+      var accountId = Account.getAccountId();
+      var guid = Device.getGUID();
+      if (!accountId || !guid) {
+        return null;
+      }
+      return Constants.ECOOKIE_PREFIX + '_' + accountId + '_' + guid;
+    }
+  }, {
+    key: 'getSavedProfilesKey',
+    value: function getSavedProfilesKey() {
+      var accountId = Account.getAccountId();
+      var guid = Device.getGUID();
+      if (!accountId || !guid) {
+        return null;
+      }
+      return Constants.PCOOKIE_PREFIX + '_' + accountId + '_' + guid;
+    }
+  }, {
+    key: 'getSavedSequenceNumberKey',
+    value: function getSavedSequenceNumberKey() {
+      var accountId = Account.getAccountId();
+      if (!accountId) {
+        return null;
+      }
+      return Constants.SEQCOOKIE_PREFIX + '_' + accountId;
+    }
+  }, {
+    key: 'getARPKey',
+    value: function getARPKey() {
+      var accountId = Account.getAccountId();
+      var guid = Device.getGUID();
+      if (!accountId || !guid) {
+        return null;
+      }
+      return Constants.ARP_COOKIE + '_' + accountId + '_' + guid;
+    }
+  }, {
+    key: 'getMetaKey',
+    value: function getMetaKey() {
+      var accountId = Account.getAccountId();
+      var guid = Device.getGUID();
+      if (!accountId || !guid) {
+        return null;
+      }
+      return Constants.META_COOKIE + '_' + accountId + '_' + guid;
+    }
+  }, {
+    key: 'getIdentitiesMapKey',
+    value: function getIdentitiesMapKey() {
+      var accountId = Account.getAccountId();
+      if (!accountId) {
+        return null;
+      }
+      return Constants.KCOOKIE_NAME + '_' + accountId;
+    }
+  }, {
+    key: 'getChargedIdKey',
+    value: function getChargedIdKey() {
+      var accountId = Account.getAccountId();
+      if (!accountId) {
+        return null;
+      }
+      return Constants.CHARGED_ID + '_' + accountId;
     }
   }]);
-  return Device;
+  return StorageManager;
 }();
 
 var logLevels$1 = {
@@ -921,143 +1002,196 @@ var Utils$1 = {
     isAnonymousDevice: isAnonymousDevice$1
 };
 
-var StorageManager = function () {
-  function StorageManager() {
-    classCallCheck(this, StorageManager);
+/* jshint bitwise: false, laxbreak: true */
+
+var GUID_PREFIX = "fx";
+var _guid = null;
+
+//see https://gist.github.com/jed/982883
+var uuid = function uuid(a) {
+  return a // if the placeholder was passed, return
+  ? ( // a random number from 0 to 15
+  a ^ // unless b is 8,
+  window.crypto.getRandomValues(new Uint8Array(1))[0] // in which case
+  % 16 // a random number from
+  >> a / 4 // 8 to 11
+  ).toString(16) // in hexadecimal
+  : ( // or otherwise a concatenated string:
+  [1e7] + // 10000000 +
+  -1e3 + // -1000 +
+  -4e3 + // -4000 +
+  -8e3 + // -80000000 +
+  -1e11 // -100000000000,
+  ).replace( // replacing
+  /[018]/g, // zeroes, ones, and eights with
+  uuid // random hex digits
+  );
+};
+
+var Device = function () {
+  function Device() {
+    classCallCheck(this, Device);
   }
 
-  createClass(StorageManager, null, [{
-    key: 'save',
-    value: function save(key, value) {
-      if (!key || !value) {
-        return;
+  createClass(Device, null, [{
+    key: 'setGUID',
+    value: function setGUID(guid) {
+      _guid = guid;
+      var GUIDKey = StorageManager.getGUIDKey();
+      if (guid === null) {
+        StorageManager.remove(GUIDKey);
+      } else {
+        StorageManager.save(GUIDKey, guid);
       }
-      Utils$1.saveToStorage(key, value);
     }
   }, {
-    key: 'read',
-    value: function read(key) {
-      if (!key) {
-        return null;
+    key: 'getGUID',
+    value: function getGUID() {
+      if (!_guid) {
+        var GUIDKey = StorageManager.getGUIDKey();
+        _guid = StorageManager.read(GUIDKey);
       }
-      return Utils$1.readFromStorage(key);
+      if (!_guid) {
+        Device.generateGUID();
+      }
+      return _guid;
     }
   }, {
-    key: 'remove',
-    value: function remove(key) {
-      if (!key) {
-        return;
-      }
-      Utils$1.removeFromStorage(key);
+    key: 'generateGUID',
+    value: function generateGUID() {
+      var _uuid = uuid().replace(/[-]/g, "");
+      var _g = '' + GUID_PREFIX + _uuid;
+      Utils$1.log.debug('Generating Device ID: ' + _g);
+      Device.setGUID(_g);
     }
   }, {
-    key: 'getGUIDKey',
-    value: function getGUIDKey() {
-      var accountId = Account.getAccountId();
-      if (!accountId) {
-        return null;
+    key: 'setVAPID',
+    value: function setVAPID(vapid) {
+      var VAPIDKey = StorageManager.getVAPIDKey();
+      if (vapid === null) {
+        StorageManager.remove(VAPIDKey);
+      } else {
+        StorageManager.save(VAPIDKey, vapid);
       }
-      return Constants.GCOOKIE_NAME + '_' + accountId;
     }
   }, {
-    key: 'getSessionKey',
-    value: function getSessionKey() {
-      var accountId = Account.getAccountId();
-      var guid = Device.getGUID();
-      if (!accountId || !guid) {
-        return null;
-      }
-      return Constants.SCOOKIE_PREFIX + '_' + accountId + '_' + guid;
+    key: 'getVAPID',
+    value: function getVAPID() {
+      var VAPIDKey = StorageManager.getVAPIDKey();
+      var _vapid = StorageManager.read(VAPIDKey);
+      return _vapid;
     }
   }, {
-    key: 'getUserEventsKey',
-    value: function getUserEventsKey() {
-      var accountId = Account.getAccountId();
-      var guid = Device.getGUID();
-      if (!accountId || !guid) {
-        return null;
-      }
-      return Constants.EV_COOKIE + '_' + accountId + '_' + guid;
+    key: 'setLastTokenUpdateTs',
+    value: function setLastTokenUpdateTs(curTs) {
+      var tsKey = StorageManager.getTokenUpdateTsKey();
+      StorageManager.save(tsKey, curTs);
     }
   }, {
-    key: 'getUserProfileKey',
-    value: function getUserProfileKey() {
-      var accountId = Account.getAccountId();
-      var guid = Device.getGUID();
-      if (!accountId || !guid) {
-        return null;
-      }
-      return Constants.PR_COOKIE + '_' + accountId + '_' + guid;
+    key: 'getLastTokenUpdateTs',
+    value: function getLastTokenUpdateTs() {
+      var tsKey = StorageManager.getTokenUpdateTsKey();
+      var ts = StorageManager.read(tsKey);
+      Utils$1.log.debug("last updated ts : " + ts);
+      // if(ts === null){
+      //     return new Date().getTime();
+      // }
+      return ts;
     }
   }, {
-    key: 'getSavedEventsKey',
-    value: function getSavedEventsKey() {
-      var accountId = Account.getAccountId();
-      var guid = Device.getGUID();
-      if (!accountId || !guid) {
-        return null;
-      }
-      return Constants.ECOOKIE_PREFIX + '_' + accountId + '_' + guid;
+    key: 'setLastSWUnregistrationForVersion',
+    value: function setLastSWUnregistrationForVersion(version) {
+      var vKey = StorageManager.getLastUnregisterForVersionKey();
+      StorageManager.save(vKey, version);
     }
   }, {
-    key: 'getSavedProfilesKey',
-    value: function getSavedProfilesKey() {
-      var accountId = Account.getAccountId();
-      var guid = Device.getGUID();
-      if (!accountId || !guid) {
-        return null;
+    key: 'getLastSWUnregistrationForVersion',
+    value: function getLastSWUnregistrationForVersion() {
+      var vKey = StorageManager.getLastUnregisterForVersionKey();
+      var ver = StorageManager.read(vKey);
+      if (ver === null) {
+        Utils$1.log.debug("no last unregistration has been set, returning current version");
+        ver = Device.getAppVersion();
       }
-      return Constants.PCOOKIE_PREFIX + '_' + accountId + '_' + guid;
+      Utils$1.log.debug("last unregistered on version : = " + ver);
+      return ver;
     }
   }, {
-    key: 'getSavedSequenceNumberKey',
-    value: function getSavedSequenceNumberKey() {
-      var accountId = Account.getAccountId();
-      if (!accountId) {
-        return null;
+    key: 'getKaiOsNotificationState',
+    value: function getKaiOsNotificationState() {
+      var _key = StorageManager.getKaiosNotificationStateKey();
+      var notificaionState = StorageManager.read(_key);
+      if (!notificaionState) {
+        return false;
       }
-      return Constants.SEQCOOKIE_PREFIX + '_' + accountId;
+      return notificaionState;
     }
   }, {
-    key: 'getARPKey',
-    value: function getARPKey() {
-      var accountId = Account.getAccountId();
-      var guid = Device.getGUID();
-      if (!accountId || !guid) {
-        return null;
-      }
-      return Constants.ARP_COOKIE + '_' + accountId + '_' + guid;
+    key: 'setKaiOsNotificationState',
+    value: function setKaiOsNotificationState(state) {
+      var _key = StorageManager.getKaiosNotificationStateKey();
+      StorageManager.save(_key, state);
     }
   }, {
-    key: 'getMetaKey',
-    value: function getMetaKey() {
-      var accountId = Account.getAccountId();
-      var guid = Device.getGUID();
-      if (!accountId || !guid) {
-        return null;
-      }
-      return Constants.META_COOKIE + '_' + accountId + '_' + guid;
+    key: 'getAppVersion',
+    value: function getAppVersion() {
+      var vKey = StorageManager.getAppVersionKey();
+      var ver = StorageManager.read(vKey);
+      Utils$1.log.debug("app version : = " + ver);
+      return ver;
     }
   }, {
-    key: 'getIdentitiesMapKey',
-    value: function getIdentitiesMapKey() {
-      var accountId = Account.getAccountId();
-      if (!accountId) {
-        return null;
-      }
-      return Constants.KCOOKIE_NAME + '_' + accountId;
-    }
-  }, {
-    key: 'getChargedIdKey',
-    value: function getChargedIdKey() {
-      var accountId = Account.getAccountId();
-      if (!accountId) {
-        return null;
-      }
-      return Constants.CHARGED_ID + '_' + accountId;
+    key: 'setAppVersion',
+    value: function setAppVersion(version) {
+      var vKey = StorageManager.getAppVersionKey();
+      StorageManager.save(vKey, version);
     }
   }]);
-  return StorageManager;
+  return Device;
+}();
+
+var _accountId = null;
+var _region = null;
+var _appVersion = null;
+
+var Account = function () {
+  function Account() {
+    classCallCheck(this, Account);
+  }
+
+  createClass(Account, null, [{
+    key: "setAccountId",
+    value: function setAccountId(accountId) {
+      _accountId = accountId;
+    }
+  }, {
+    key: "getAccountId",
+    value: function getAccountId() {
+      return _accountId;
+    }
+  }, {
+    key: "setRegion",
+    value: function setRegion(region) {
+      _region = region;
+    }
+  }, {
+    key: "getRegion",
+    value: function getRegion() {
+      return _region;
+    }
+  }, {
+    key: "setAppVersion",
+    value: function setAppVersion(version) {
+      _appVersion = version;
+      Device.setAppVersion(version);
+    }
+  }, {
+    key: "getAppVersion",
+    value: function getAppVersion() {
+      return _appVersion;
+    }
+  }]);
+  return Account;
 }();
 
 var _sessionId = 0;
@@ -1073,7 +1207,7 @@ var _getStorageKey = function _getStorageKey() {
 var _readSessionObject = function _readSessionObject() {
   var storageKey = _getStorageKey();
   var obj = StorageManager.read(storageKey) || {};
-  if (!Utils.isObject(obj)) {
+  if (!Utils$1.isObject(obj)) {
     obj = {};
   }
   return obj;
@@ -1090,7 +1224,7 @@ var Session = function () {
     classCallCheck(this, Session);
 
     this.options = options;
-    _sessionId = Utils.getNow();
+    _sessionId = Utils$1.getNow();
     var sessionObj = _readSessionObject();
     _previousSessionId = sessionObj.ps || 0;
     _isFirstSession = _previousSessionId <= 0;
@@ -1119,7 +1253,7 @@ var Session = function () {
       if (sessionStart <= 0) {
         return 0;
       }
-      return Math.floor(Utils.getNow() - sessionStart);
+      return Math.floor(Utils$1.getNow() - sessionStart);
     }
   }, {
     key: 'getTotalVisits',
@@ -1167,7 +1301,7 @@ var LZS = {
             len,
             tmp_hex;
 
-        if (!Utils.isArray(byte_arr)) {
+        if (!Utils$1.isArray(byte_arr)) {
             return false;
         }
 
@@ -1483,7 +1617,7 @@ var LZS$1 = {
 
 var Helpers = {
     compressData: function compressData(dataObject) {
-        Utils.log.debug('dobj:' + dataObject);
+        Utils$1.log.debug('dobj:' + dataObject);
         return LZS$1.compressToBase64(dataObject);
     },
     // profile like https://developers.google.com/+/api/latest/people
@@ -1534,7 +1668,7 @@ var Helpers = {
 
         if (user.birthday) {
             var yyyymmdd = user.birthday.split('-'); //comes in as "1976-07-27"
-            profileData.DOB = Utils.setDate(yyyymmdd[0] + yyyymmdd[1] + yyyymmdd[2]);
+            profileData.DOB = Utils$1.setDate(yyyymmdd[0] + yyyymmdd[1] + yyyymmdd[2]);
         }
 
         if (user.relationshipStatus) {
@@ -1543,7 +1677,7 @@ var Helpers = {
                 profileData.Married = 'Y';
             }
         }
-        Utils.log.debug("gplus usr profile " + JSON.stringify(profileData));
+        Utils$1.log.debug("gplus usr profile " + JSON.stringify(profileData));
 
         return profileData;
     },
@@ -1609,7 +1743,7 @@ var Helpers = {
 
         if (user.birthday) {
             var mmddyy = user.birthday.split('/'); //comes in as "08/15/1947"
-            profileData.DOB = Utils.setDate(mmddyy[2] + mmddyy[0] + mmddyy[1]);
+            profileData.DOB = Utils$1.setDate(mmddyy[2] + mmddyy[0] + mmddyy[1]);
         }
         return profileData;
     }
@@ -1619,13 +1753,13 @@ var _globalChargedId = void 0;
 
 //events can't have any nested structure or arrays
 var isEventStructureFlat = function isEventStructureFlat(eventObj) {
-    if (Utils.isObject(eventObj)) {
+    if (Utils$1.isObject(eventObj)) {
         for (var key in eventObj) {
             if (eventObj.hasOwnProperty(key)) {
-                if (Utils.isObject(eventObj[key]) || Utils.isArray(eventObj[key])) {
+                if (Utils$1.isObject(eventObj[key]) || Utils$1.isArray(eventObj[key])) {
                     return false;
-                } else if (Utils.isDateObject(eventObj[key])) {
-                    eventObj[key] = Utils.convertToWZRKDate(eventObj[key]);
+                } else if (Utils$1.isDateObject(eventObj[key])) {
+                    eventObj[key] = Utils$1.convertToWZRKDate(eventObj[key]);
                 }
             }
         }
@@ -1636,7 +1770,7 @@ var isEventStructureFlat = function isEventStructureFlat(eventObj) {
 
 var isProfileValid = function isProfileValid(profileObj) {
     var valid = true;
-    if (Utils.isObject(profileObj)) {
+    if (Utils$1.isObject(profileObj)) {
         for (var profileKey in profileObj) {
             if (profileObj.hasOwnProperty(profileKey)) {
                 var profileVal = profileObj[profileKey];
@@ -1647,60 +1781,60 @@ var isProfileValid = function isProfileValid(profileObj) {
                 }
                 if (profileKey === 'Gender' && !profileVal.match(/^M$|^F$/)) {
                     valid = false;
-                    Utils.log.error(ErrorManager.MESSAGES.gender);
+                    Utils$1.log.error(ErrorManager.MESSAGES.gender);
                 }
 
                 if (profileKey === 'Employed' && !profileVal.match(/^Y$|^N$/)) {
                     valid = false;
-                    Utils.log.error(ErrorManager.MESSAGES.employed);
+                    Utils$1.log.error(ErrorManager.MESSAGES.employed);
                 }
 
                 if (profileKey === 'Married' && !profileVal.match(/^Y$|^N$/)) {
                     valid = false;
-                    Utils.log.error(ErrorManager.MESSAGES.married);
+                    Utils$1.log.error(ErrorManager.MESSAGES.married);
                 }
 
                 if (profileKey === 'Education' && !profileVal.match(/^School$|^College$|^Graduate$/)) {
                     valid = false;
-                    Utils.log.error(ErrorManager.MESSAGES.education);
+                    Utils$1.log.error(ErrorManager.MESSAGES.education);
                 }
 
                 if (profileKey === 'Age' && (typeof profileVal === 'undefined' ? 'undefined' : _typeof(profileVal)) !== Constants.UNDEFINED) {
-                    if (Utils.isConvertibleToNumber(profileVal)) {
+                    if (Utils$1.isConvertibleToNumber(profileVal)) {
                         profileObj.Age = +profileVal;
                     } else {
                         valid = false;
-                        Utils.log.error(ErrorManager.MESSAGES.age);
+                        Utils$1.log.error(ErrorManager.MESSAGES.age);
                     }
                 }
 
                 // dob will come in like this - $dt_19470815 or dateObject
                 if (profileKey === 'DOB') {
-                    if ((!/^\$D_/.test(profileVal) || (profileVal + "").length !== 11) && !Utils.isDateObject(profileVal)) {
+                    if ((!/^\$D_/.test(profileVal) || (profileVal + "").length !== 11) && !Utils$1.isDateObject(profileVal)) {
                         valid = false;
-                        Utils.log.error(ErrorManager.MESSAGES.dob);
+                        Utils$1.log.error(ErrorManager.MESSAGES.dob);
                     }
 
-                    if (Utils.isDateObject(profileVal)) {
-                        profileObj[profileKey] = Utils.convertToWZRKDate(profileVal);
+                    if (Utils$1.isDateObject(profileVal)) {
+                        profileObj[profileKey] = Utils$1.convertToWZRKDate(profileVal);
                     }
-                } else if (Utils.isDateObject(profileVal)) {
-                    profileObj[profileKey] = Utils.convertToWZRKDate(profileVal);
+                } else if (Utils$1.isDateObject(profileVal)) {
+                    profileObj[profileKey] = Utils$1.convertToWZRKDate(profileVal);
                 }
 
-                if (profileKey === 'Phone' && !Utils.isObjectEmpty(profileVal)) {
+                if (profileKey === 'Phone' && !Utils$1.isObjectEmpty(profileVal)) {
                     if (profileVal.length > 8 && profileVal.charAt(0) === '+') {
                         // valid phone number
                         profileVal = profileVal.substring(1, profileVal.length);
-                        if (Utils.isConvertibleToNumber(profileVal)) {
+                        if (Utils$1.isConvertibleToNumber(profileVal)) {
                             profileObj.Phone = +profileVal;
                         } else {
                             valid = false;
-                            Utils.log.error(ErrorManager.MESSAGES.phoneFormat + ". Removed.");
+                            Utils$1.log.error(ErrorManager.MESSAGES.phoneFormat + ". Removed.");
                         }
                     } else {
                         valid = false;
-                        Utils.log.error(ErrorManager.MESSAGES.phoneFormat + ". Removed.");
+                        Utils$1.log.error(ErrorManager.MESSAGES.phoneFormat + ". Removed.");
                     }
                 }
 
@@ -1715,12 +1849,12 @@ var isProfileValid = function isProfileValid(profileObj) {
 };
 
 var isChargedEventStructureValid = function isChargedEventStructureValid(chargedObj, callback) {
-    if (Utils.isObject(chargedObj)) {
+    if (Utils$1.isObject(chargedObj)) {
         for (var key in chargedObj) {
             if (chargedObj.hasOwnProperty(key)) {
 
                 if (key === "Items") {
-                    if (!Utils.isArray(chargedObj[key])) {
+                    if (!Utils$1.isArray(chargedObj[key])) {
                         return false;
                     }
 
@@ -1733,17 +1867,17 @@ var isChargedEventStructureValid = function isChargedEventStructureValid(charged
                     for (var itemKey in chargedObj[key]) {
                         if (chargedObj[key].hasOwnProperty(itemKey)) {
                             // since default array implementation could be overridden - e.g. Teabox site
-                            if (!Utils.isObject(chargedObj[key][itemKey]) || !isEventStructureFlat(chargedObj[key][itemKey])) {
+                            if (!Utils$1.isObject(chargedObj[key][itemKey]) || !isEventStructureFlat(chargedObj[key][itemKey])) {
                                 return false;
                             }
                         }
                     }
                 } else {
                     //Items
-                    if (Utils.isObject(chargedObj[key]) || Utils.isArray(chargedObj[key])) {
+                    if (Utils$1.isObject(chargedObj[key]) || Utils$1.isArray(chargedObj[key])) {
                         return false;
-                    } else if (Utils.isDateObject(chargedObj[key])) {
-                        chargedObj[key] = Utils.convertToWZRKDate(chargedObj[key]);
+                    } else if (Utils$1.isDateObject(chargedObj[key])) {
+                        chargedObj[key] = Utils$1.convertToWZRKDate(chargedObj[key]);
                     }
                 } // if key == Items
             }
@@ -1757,7 +1891,7 @@ var isChargedEventStructureValid = function isChargedEventStructureValid(charged
             }
             if ((typeof _globalChargedId === 'undefined' ? 'undefined' : _typeof(_globalChargedId)) !== Constants.UNDEFINED && _globalChargedId === chargedId) {
                 //drop event- duplicate charged id
-                Utils.log.error("Duplicate charged Id - Dropped" + chargedObj);
+                Utils$1.log.error("Duplicate charged Id - Dropped" + chargedObj);
                 return false;
             }
             _globalChargedId = chargedId;
@@ -1844,7 +1978,7 @@ var ProfileHandler = function () {
   }, {
     key: 'extractIdentifiersFromProfileObj',
     value: function extractIdentifiersFromProfileObj(profileObj) {
-      if (!profileObj || Utils.isObjectEmpty(profileObj)) {
+      if (!profileObj || Utils$1.isObjectEmpty(profileObj)) {
         return null;
       }
 
@@ -1881,7 +2015,7 @@ var ProfileHandler = function () {
     value: function generateProfileObj(profileArr) {
       var profileObj;
 
-      if (!Utils.isArray(profileArr) || profileArr.length <= 0) {
+      if (!Utils$1.isArray(profileArr) || profileArr.length <= 0) {
         return null;
       }
 
@@ -1891,24 +2025,24 @@ var ProfileHandler = function () {
         if (outerObj.Site) {
           //organic data from the site
           profileObj = outerObj.Site;
-          if (Utils.isObjectEmpty(profileObj) || !Validator.isProfileValid(profileObj)) {
+          if (Utils$1.isObjectEmpty(profileObj) || !Validator.isProfileValid(profileObj)) {
             return null;
           }
         } else if (outerObj.Facebook) {
           //fb connect data
           var FbProfileObj = outerObj.Facebook;
           //make sure that the object contains any data at all
-          if (!Utils.isObjectEmpty(FbProfileObj) && !FbProfileObj.error) {
+          if (!Utils$1.isObjectEmpty(FbProfileObj) && !FbProfileObj.error) {
             profileObj = Helpers.processFBUserObj(FbProfileObj);
           }
         } else if (outerObj['Google Plus']) {
           var GPlusProfileObj = outerObj['Google Plus'];
-          if (!Utils.isObjectEmpty(GPlusProfileObj) && !GPlusProfileObj.error) {
+          if (!Utils$1.isObjectEmpty(GPlusProfileObj) && !GPlusProfileObj.error) {
             profileObj = Helpers.processGPlusUserObj(GPlusProfileObj);
           }
         }
 
-        if (profileObj && !Utils.isObjectEmpty(profileObj)) {
+        if (profileObj && !Utils$1.isObjectEmpty(profileObj)) {
           // profile got set from above
           if (!profileObj.tz) {
             //try to auto capture user timezone if not present
@@ -1922,7 +2056,7 @@ var ProfileHandler = function () {
   }, {
     key: 'generateProfileEvent',
     value: function generateProfileEvent(profileObj) {
-      if (!profileObj || Utils.isObjectEmpty(profileObj)) {
+      if (!profileObj || Utils$1.isObjectEmpty(profileObj)) {
         return null;
       }
       var identifiers = ProfileHandler.extractIdentifiersFromProfileObj(profileObj);
@@ -1931,7 +2065,7 @@ var ProfileHandler = function () {
       }
 
       return {
-        ep: Utils.getNow(),
+        ep: Utils$1.getNow(),
         type: Constants.EVENT_TYPES.PROFILE,
         profile: profileObj
       };
@@ -1972,7 +2106,7 @@ var Request = function () {
       request.setRequestHeader("Content-Type", "application/json");
       request.send(JSON.stringify(this.data));
 
-      Utils.log.debug("req snt -> url: " + this.url);
+      Utils$1.log.debug("req snt -> url: " + this.url);
     }
   }]);
   return Request;
@@ -1982,7 +2116,7 @@ var version = 10000;
 
 var _loadSavedUnsentEvents = function _loadSavedUnsentEvents(unsentKey) {
   var savedUnsentEvents = StorageManager.read(unsentKey);
-  if (!Utils.isArray(savedUnsentEvents)) {
+  if (!Utils$1.isArray(savedUnsentEvents)) {
     return [];
   }
   return savedUnsentEvents;
@@ -2043,7 +2177,7 @@ var QueueManager = function () {
       }
       data._seq = this._nextSequenceNumber();
       var _;
-      Utils.log.debug('Queuing event ' + JSON.stringify(data));
+      Utils$1.log.debug('Queuing event ' + JSON.stringify(data));
       if (data.type === Constants.EVENT_TYPES.PROFILE) {
         _ = this._unsentProfiles.push(data);
       } else {
@@ -2076,7 +2210,7 @@ var QueueManager = function () {
     key: '_scheduleEvents',
     value: function _scheduleEvents(callback, retry) {
       if (this._unsentCount() === 0) {
-        Utils.log.debug("No events in the queue, not scheduling an event update");
+        Utils$1.log.debug("No events in the queue, not scheduling an event update");
         return false;
       }
 
@@ -2088,7 +2222,7 @@ var QueueManager = function () {
 
       // otherwise schdule and event upload
       if (this._requestScheduled) {
-        Utils.log.debug("Event upload already scheduled");
+        Utils$1.log.debug("Event upload already scheduled");
         return false;
       }
 
@@ -2101,7 +2235,7 @@ var QueueManager = function () {
         this._sendEvents(callback);
       }.bind(this), interval);
 
-      Utils.log.debug('Scheduling an event upload in ' + interval / 1000 + ' seconds');
+      Utils$1.log.debug('Scheduling an event upload in ' + interval / 1000 + ' seconds');
 
       return false;
     }
@@ -2120,7 +2254,7 @@ var QueueManager = function () {
       }
       if (_willNotSend) {
         var _debugMessage = 'Skipping events upload: ' + _message;
-        Utils.log.debug(_debugMessage);
+        Utils$1.log.debug(_debugMessage);
 
         if (typeof callback === 'function') {
           callback(0, _debugMessage);
@@ -2131,7 +2265,7 @@ var QueueManager = function () {
       this._uploading = true;
 
       var url = this._getEndPoint();
-      url = this._addToURL(url, 'sn', Utils.getNow()); // send epoch seconds as seq number
+      url = this._addToURL(url, 'sn', Utils$1.getNow()); // send epoch seconds as seq number
       url = this._addARPToRequest(url);
       url = this._addToURL(url, "r", new Date().getTime()); // add epoch millis to beat caching of the URL
 
@@ -2161,18 +2295,26 @@ var QueueManager = function () {
       var maxProfilesId = mergedEvents.maxProfilesId;
       var events = mergedEvents.eventsToSend;
 
-      Utils.log.debug('Sending events: ' + JSON.stringify(events));
+      Utils$1.log.debug('Sending events: ' + JSON.stringify(events));
 
       var _this = this;
       new Request(url, events).send(function (status, response) {
         _this._uploading = false;
         response = response || {};
-        Utils.log.debug('handling response with status: ' + status + ' and data: ' + JSON.stringify(response));
+        Utils$1.log.debug('handling response with status: ' + status + ' and data: ' + JSON.stringify(response));
 
         try {
           if (status === 200) {
             if (response.g) {
               Device.setGUID(response.g);
+            }
+            if (response.KVAPID) {
+              Utils$1.log.debug('kaios vapid recieved: ' + response.KVAPID);
+              Device.setVAPID(response.KVAPID);
+            }
+            if (response.hasOwnProperty('kaiosPush')) {
+              Utils$1.log.debug('kaios notification status: ' + response.kaiosPush);
+              Device.setKaiOsNotificationState(response.kaiosPush);
             }
             _this._removeEvents(maxEventId, maxProfilesId);
             _this._saveEvents();
@@ -2186,7 +2328,7 @@ var QueueManager = function () {
             // handle errors
             // request too large
           } else if (status === 413) {
-            Utils.log.error('event upload request too large');
+            Utils$1.log.error('event upload request too large');
             // reduct batch size and try again
             // if just one event remove it and give up
             if (_this.options.uploadBatchSize === 1) {
@@ -2198,7 +2340,7 @@ var QueueManager = function () {
 
             // all other errors
           } else {
-            Utils.log.error('Events upload failed with status ' + status + '.  Will retry.');
+            Utils$1.log.error('Events upload failed with status ' + status + '.  Will retry.');
             _this._scheduleRetry();
             if (typeof callback === 'function') {
               callback(status, response);
@@ -2206,8 +2348,64 @@ var QueueManager = function () {
           }
         } catch (e) {
           _this._uploading = false;
-          Utils.log.error('Events upload failed: ' + e.message + '.  Will retry.');
+          Utils$1.log.error('Events upload failed: ' + e.message + '.  Will retry.');
           _this._scheduleRetry();
+        }
+      });
+    }
+    // unregister token for existing user.
+
+  }, {
+    key: '_unregisterTokenApiCall',
+    value: function _unregisterTokenApiCall(unregisterData, callback) {
+
+      // this._uploading = true; Do i need this for Kaios ?
+
+      var url = this._getEndPoint();
+      url = this._addToURL(url, 'sn', Utils$1.getNow()); // send epoch seconds as seq number
+      url = this._addARPToRequest(url);
+      url = this._addToURL(url, "r", new Date().getTime()); // add epoch millis to beat caching of the URL
+
+      var meta = {
+        id: Account.getAccountId(),
+        "SDK Version": version,
+        s: '' + Session.getSessionId()
+      };
+
+      if (Account.getAppVersion()) {
+        meta.Version = '' + Account.getAppVersion();
+      }
+
+      var guid = unregisterData.g;
+      if (guid) {
+        url = this._addToURL(url, "gc", guid);
+        meta.g = guid;
+      }
+
+      Utils$1.log.debug('kaios vapid req with request url : ' + url + ' and meta: ' + meta);
+
+      url = this._addToURL(url, "d", Helpers.compressData(JSON.stringify(meta)));
+
+      Utils$1.log.debug('Sending kaios-Token unregister request: ' + JSON.stringify(unregisterData));
+      var data = [];
+      data.push(unregisterData);
+      new Request(url, data).send(function (status, response) {
+        // _this._uploading = false;
+        response = response || {};
+        Utils$1.log.debug('kaios req handling response with status: ' + status + ' and data: ' + JSON.stringify(response));
+
+        try {
+          if (status === 200) {
+
+            //Device.setGUID(response.KVAPID);
+            if (typeof callback === 'function') {
+              callback(); // call callback to register subscription to kaios servers.
+            }
+          } else {
+            Utils$1.log.error('kaios vapid request failed with status ' + status + '.');
+          }
+        } catch (e) {
+          Utils$1.log.error('kaios vapid request failed: ' + e.message + '.');
         }
       });
     }
@@ -2266,7 +2464,7 @@ var QueueManager = function () {
         var noEvents = eventIndex >= this._unsentEvents.length;
 
         if (noEvents && noProfiles) {
-          Utils.log.error('Problem merging event queues, fewer events than expected');
+          Utils$1.log.error('Problem merging event queues, fewer events than expected');
           break;
         } else if (noProfiles) {
           event = this._unsentEvents[eventIndex++];
@@ -2316,7 +2514,7 @@ var QueueManager = function () {
         }
         StorageManager.save(ARPKey, arpFromStorage);
       } catch (e) {
-        Utils.log.error("Unable to parse ARP JSON: " + e);
+        Utils$1.log.error("Unable to parse ARP JSON: " + e);
       }
     }
   }, {
@@ -2347,7 +2545,7 @@ var _profilesMap;
 var _generateEvent = function _generateEvent(type, callback) {
   var data = {
     type: type,
-    ep: Utils.getNow()
+    ep: Utils$1.getNow()
   };
   if (callback) {
     callback(data);
@@ -2443,7 +2641,7 @@ var CleverTapAPI = function () {
   }, {
     key: 'processEvent',
     value: function processEvent(data) {
-      if (!Utils.isObject(data)) {
+      if (!Utils$1.isObject(data)) {
         return;
       }
       if (data.type === Constants.EVENT_TYPES.EVENT) {
@@ -2484,21 +2682,21 @@ var CleverTapAPI = function () {
       }
 
       // if no identifier provided or there are no identified users on the device; just push on the current profile
-      if (!haveIdentifier || Utils.isAnonymousDevice()) {
-        Utils.log.debug('onUserLogin: either don\'t have identifier or device is anonymous, associating profile ' + JSON.stringify(profileObj) + ' with current user profile');
+      if (!haveIdentifier || Utils$1.isAnonymousDevice()) {
+        Utils$1.log.debug('onUserLogin: either don\'t have identifier or device is anonymous, associating profile ' + JSON.stringify(profileObj) + ' with current user profile');
         this._processProfileEvent(profileObj);
         return;
       }
 
       // if profile maps to current guid, push on current profile
       if (cachedGUID && cachedGUID === currentGUID) {
-        Utils.log.debug('onUserLogin: profile ' + JSON.stringify(profileObj) + ' maps to current device id ' + currentGUID + ', using current user profile');
+        Utils$1.log.debug('onUserLogin: profile ' + JSON.stringify(profileObj) + ' maps to current device id ' + currentGUID + ', using current user profile');
         this._processProfileEvent(profileObj);
         return;
       }
 
       if (this.processingUserLogin) {
-        Utils.log.debug('Already processing onUserLogin for ' + this.processingUserLoginKey + ' , will not process for profile: ' + JSON.stringify(profileObj));
+        Utils$1.log.debug('Already processing onUserLogin for ' + this.processingUserLoginKey + ' , will not process for profile: ' + JSON.stringify(profileObj));
         return;
       }
 
@@ -2506,8 +2704,10 @@ var CleverTapAPI = function () {
       this.processingUserLoginKey = JSON.stringify(profileObj);
 
       // reset profile, creating or restoring guid
-      Utils.log.debug('Processing onUserLogin for ' + this.processingUserLoginKey);
+      Utils$1.log.debug('Processing onUserLogin for ' + this.processingUserLoginKey);
 
+      // un-register kaios-token for this guid
+      this.unregisterToken(currentGUID);
       // clear any events in the queue
       // wait for callback to configure new GUID/session
       this.queueManager.clearEvents(function () {
@@ -2529,6 +2729,15 @@ var CleverTapAPI = function () {
       });
     }
   }, {
+    key: 'unregisterToken',
+    value: function unregisterToken(oldguid) {
+      var data = {};
+      data.type = Constants.EVENT_TYPES.DATA;
+      data.g = oldguid;
+      data.action = "unregister";
+      this.queueManager._unregisterTokenApiCall(data);
+    }
+  }, {
     key: '_newSession',
     value: function _newSession() {
       this.session = new Session(Object.assign({}, this.options));
@@ -2547,6 +2756,88 @@ var CleverTapAPI = function () {
           _this3.processEvent(data);
         });
       }
+    }
+    // registers ServiceWorker for clevertap..
+
+  }, {
+    key: 'registerSW',
+    value: function registerSW(serviceWorkerPath, needToUnregister) {
+      var _this4 = this;
+
+      var swRegistration = null;
+      Utils$1.log.debug('--------->registerSW-->', navigator);
+      //unregistration if needed
+      // navigator.serviceWorker.getRegistrations().then(function(registrations) {
+      //     for(let registration of registrations) {
+      //         if(registration.unregister()) {
+      //             Utils.log.debug("service worker:", registration);
+      //             Utils.log.debug("un-register successfully");
+      //         }
+      //     } });
+
+      if ('serviceWorker' in navigator && 'PushManager' in window) {
+        Utils$1.log.debug('Service Worker and Push is supported');
+        navigator.serviceWorker.register(serviceWorkerPath).then(function (swReg) {
+          swRegistration = swReg;
+          console.log("Subscription data: ", swReg);
+          console.log('Registration succeeded.');
+          //console.log("update service worker initiated");
+          //swRegistration.update(); // TODO need to check..
+          if (needToUnregister) {
+            swRegistration.unregister().then(function (success) {
+              Utils$1.log.debug("Service worker unregistered attempt, success: " + success);
+            });
+          } else {
+            _this4.triggerPushSubscription(swRegistration);
+          }
+        }).catch(function (error) {
+          console.error('Service Worker Error', error);
+        });
+      } else {
+        console.warn('Push messaging is not supported');
+      }
+    }
+  }, {
+    key: 'triggerPushSubscription',
+    value: function triggerPushSubscription(swRegistration) {
+      var _this5 = this;
+
+      var publicVapidKey = Device.getVAPID();
+      var subscriptionData = {};
+      console.log("subscribing push notification sw " + publicVapidKey);
+      swRegistration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: this.urlBase64ToUint8Array(publicVapidKey)
+      }).then(function (subscription) {
+        console.log("pushManager Subscription data: ", subscription.toJSON());
+        console.log("applicationserverykey", subscription.options.applicationServerKey);
+        subscriptionData = JSON.parse(JSON.stringify(subscription));
+        subscriptionData.endpoint = subscriptionData.endpoint.split('/').pop();
+        subscriptionData.browser = 'Kaios';
+        _this5._startuploadPushToken(subscriptionData);
+        var curTs = new Date().getTime();
+        Device.setLastTokenUpdateTs(curTs);
+      });
+    }
+  }, {
+    key: 'urlBase64ToUint8Array',
+    value: function urlBase64ToUint8Array(base64String) {
+      var padding = '='.repeat((4 - base64String.length % 4) % 4);
+      var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+
+      var rawData = window.atob(base64);
+      var outputArray = new Uint8Array(rawData.length);
+
+      for (var i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    }
+  }, {
+    key: '_startuploadPushToken',
+    value: function _startuploadPushToken(subscriptionData) {
+      subscriptionData.type = Constants.EVENT_TYPES.DATA;
+      this.processEvent(subscriptionData);
     }
   }, {
     key: '_getEventsMap',
@@ -2604,7 +2895,7 @@ var CleverTapAPI = function () {
         return;
       }
       var eventsMap = this._getEventsMap();
-      var nowTs = Utils.getNow();
+      var nowTs = Utils$1.getNow();
       var evtDetail = eventsMap[evtName];
       if (evtDetail) {
         evtDetail[2] = nowTs;
@@ -2654,8 +2945,8 @@ var CleverTapAPI = function () {
     value: function _addSystemDataToObject(dataObject, ignoreTrim) {
       // ignore trim for chrome notifications; undefined everywhere else
       if (!ignoreTrim) {
-        dataObject = Utils.removeUnsupportedChars(dataObject, function (errorCode, errorMessage) {
-          Utils.reportError(errorCode, errorMessage);
+        dataObject = Utils$1.removeUnsupportedChars(dataObject, function (errorCode, errorMessage) {
+          Utils$1.reportError(errorCode, errorMessage);
         });
       }
       var error = ErrorManager.popError();
@@ -2679,12 +2970,12 @@ var CleverTapAPI = function () {
 var _eventQueue = [];
 
 var _processEventArray = function _processEventArray(eventArr) {
-    if (!Utils.isArray(eventArr)) {
+    if (!Utils$1.isArray(eventArr)) {
         return;
     }
 
     var _errorCallback = function _errorCallback(code, message) {
-        Utils.reportError(code, message);
+        Utils$1.reportError(code, message);
     };
 
     var data = null;
@@ -2692,42 +2983,42 @@ var _processEventArray = function _processEventArray(eventArr) {
     while (eventArr.length > 0) {
         var eventName = eventArr.shift(); // take out name of the event
 
-        if (!Utils.isString(eventName)) {
-            Utils.log.error(ErrorManager.MESSAGES.event);
+        if (!Utils$1.isString(eventName)) {
+            Utils$1.log.error(ErrorManager.MESSAGES.event);
             return;
         }
 
         if (eventName.length > 1024) {
             eventName = eventName.substring(0, 1024);
-            Utils.reportError(510, eventName + "... length exceeded 1024 chars. Trimmed.");
+            Utils$1.reportError(510, eventName + "... length exceeded 1024 chars. Trimmed.");
         }
 
         if (eventName === "Stayed" || eventName === "UTM Visited" || eventName === "App Launched" || eventName === "Notification Sent" || eventName === "Notification Viewed" || eventName === "Notification Clicked") {
-            Utils.reportError(513, eventName + " is a restricted system event. It cannot be used as an event name.");
+            Utils$1.reportError(513, eventName + " is a restricted system event. It cannot be used as an event name.");
             continue;
         }
 
         data = {
             type: Constants.EVENT_TYPES.EVENT,
-            ep: Utils.getNow(),
-            evtName: Utils.sanitize(eventName, Utils.unsupportedKeyCharRegex)
+            ep: Utils$1.getNow(),
+            evtName: Utils$1.sanitize(eventName, Utils$1.unsupportedKeyCharRegex)
         };
 
         if (eventArr.length !== 0) {
             var eventObj = eventArr.shift();
 
-            if (!Utils.isObject(eventObj)) {
+            if (!Utils$1.isObject(eventObj)) {
                 eventArr.unshift(eventObj); // put it back if it is not an object
             } else {
                 //check Charged Event vs. other events.
                 if (eventName === "Charged") {
                     if (!Validator.isChargedEventStructureValid(eventObj), _errorCallback) {
-                        Utils.reportError(511, "Charged event structure invalid. Not sent.");
+                        Utils$1.reportError(511, "Charged event structure invalid. Not sent.");
                         continue;
                     }
                 } else {
                     if (!Validator.isEventStructureFlat(eventObj)) {
-                        Utils.reportError(512, eventName + " event structure invalid. Not sent.");
+                        Utils$1.reportError(512, eventName + " event structure invalid. Not sent.");
                         continue;
                     }
                 }
@@ -2867,14 +3158,15 @@ var CleverTap = function () {
     this.event = old.event || [];
     this.profile = old.profile || [];
     this.onUserLogin = old.onUserLogin || [];
-    this.logLevels = Utils.logLevels;
+    this.logLevels = Utils$1.logLevels;
+    this.swpath = '/serviceWorker.js';
   }
 
   createClass(CleverTap, [{
     key: 'init',
     value: function init(id, region) {
-      if (Utils.isEmptyString(id)) {
-        Utils.log.error(ErrorManager.MESSAGES.init);
+      if (Utils$1.isEmptyString(id)) {
+        Utils$1.log.error(ErrorManager.MESSAGES.init);
         return;
       }
       Account.setAccountId(id);
@@ -2885,6 +3177,12 @@ var CleverTap = function () {
       this.onUserLogin = new UserLoginHandler(this.api, this.onUserLogin);
       this.event = new EventHandler(this.api, this.event);
       this.profile = new ProfileHandler(this.api, this.profile);
+      this._initiateTokenUpdateIfNeeded();
+    }
+  }, {
+    key: 'setSWPath',
+    value: function setSWPath(swpath) {
+      this.swpath = swpath;
     }
   }, {
     key: 'getCleverTapID',
@@ -2894,12 +3192,12 @@ var CleverTap = function () {
   }, {
     key: 'setLogLevel',
     value: function setLogLevel(levelName) {
-      Utils.setLogLevel(levelName);
+      Utils$1.setLogLevel(levelName);
     }
   }, {
     key: 'getLogLevel',
     value: function getLogLevel() {
-      return Utils.getLogLevel();
+      return Utils$1.getLogLevel();
     }
   }, {
     key: 'setAppVersion',
@@ -2910,6 +3208,49 @@ var CleverTap = function () {
     key: 'getAppVersion',
     value: function getAppVersion() {
       return Account.getAppVersion();
+    }
+  }, {
+    key: '_registerCTNotifications',
+    value: function _registerCTNotifications(serviceWorkerPath, unregister) {
+      if (!serviceWorkerPath) {
+        serviceWorkerPath = this.swpath;
+      } else {
+        this.swpath = serviceWorkerPath;
+      }
+      Utils$1.log.debug('register initiated, vapid: ' + Device.getVAPID());
+
+      // kaios-Vapid and Push Notification on dashboard should be enabled
+      if (Device.getVAPID() && Device.getKaiOsNotificationState()) {
+        if (this.api !== null) {
+          Utils$1.log.debug('registering SW callled');
+          this.api.registerSW(serviceWorkerPath, unregister);
+        } else {
+          Utils$1.log.debug('clevertap-Api context not available ' + this.api);
+        }
+      } else {
+        Utils$1.log.debug('Service Worker Subscription from client failed: Vapid-key: ' + Device.getVAPID() + ' Notification Enabled:' + Device.getKaiOsNotificationState());
+      }
+    }
+  }, {
+    key: 'unregisterCTNotifications',
+    value: function unregisterCTNotifications(serviceWorkerPath) {
+      this._registerCTNotifications(serviceWorkerPath, true);
+    }
+  }, {
+    key: 'registerCTNotifications',
+    value: function registerCTNotifications(serviceWorkerPath) {
+      this._registerCTNotifications(serviceWorkerPath, false);
+    }
+  }, {
+    key: '_initiateTokenUpdateIfNeeded',
+    value: function _initiateTokenUpdateIfNeeded() {
+      Utils$1.log.debug('token updating: for vapid: ' + Device.getVAPID() + 'notification state:' + Device.getKaiOsNotificationState());
+      var lastTokenUpdateTs = Device.getLastTokenUpdateTs(); // when No Registration happens for kaios , it returns current timestamp
+      // If Registration tried by user do registration on every app launch..
+      if (lastTokenUpdateTs !== null) {
+        Utils$1.log.debug('Updating token initated on app launch');
+        this._registerCTNotifications(this.swpath, false);
+      }
     }
   }]);
   return CleverTap;

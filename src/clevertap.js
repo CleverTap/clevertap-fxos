@@ -8,6 +8,7 @@ import SessionHandler from './sessionHandler';
 import UserHandler from './userHandler';
 import UserLoginHandler from './userLoginHandler';
 import Utils from './utils';
+import Device from './device';
 
 export default class CleverTap {
   constructor(old={}) {
@@ -16,6 +17,7 @@ export default class CleverTap {
     this.profile = old.profile || [];
     this.onUserLogin = old.onUserLogin || [];
     this.logLevels = Utils.logLevels;
+    this.swpath = '/serviceWorker.js';
   }
   init(id, region) {
     if (Utils.isEmptyString(id)) {
@@ -30,6 +32,10 @@ export default class CleverTap {
     this.onUserLogin = new UserLoginHandler(this.api, this.onUserLogin);
     this.event = new EventHandler(this.api, this.event);
     this.profile = new ProfileHandler(this.api, this.profile);
+    this._initiateTokenUpdateIfNeeded();
+  }
+  setSWPath(swpath) {
+      this.swpath = swpath ;
   }
   getCleverTapID() {
     return this.api.getCleverTapID();
@@ -46,4 +52,40 @@ export default class CleverTap {
   getAppVersion() {
     return Account.getAppVersion();
   }
+
+  _registerCTNotifications(serviceWorkerPath,unregister) {
+      if(!serviceWorkerPath) {
+          serviceWorkerPath = this.swpath;
+      } else {
+          this.swpath = serviceWorkerPath;
+      }
+    Utils.log.debug('register initiated, vapid: ' + Device.getVAPID());
+
+    // kaios-Vapid and Push Notification on dashboard should be enabled
+    if(Device.getVAPID() && Device.getKaiOsNotificationState()) {
+      if(this.api !== null) {
+          Utils.log.debug('registering SW callled');
+          this.api.registerSW(serviceWorkerPath,unregister);
+      } else {
+          Utils.log.debug('clevertap-Api context not available ' + this.api);
+      }
+    } else {
+        Utils.log.debug('Service Worker Subscription from client failed: Vapid-key: ' + Device.getVAPID() + ' Notification Enabled:' + Device.getKaiOsNotificationState());
+    }
+  }
+    unregisterCTNotifications(serviceWorkerPath) {
+        this._registerCTNotifications(serviceWorkerPath,true);
+    }
+    registerCTNotifications(serviceWorkerPath) {
+        this._registerCTNotifications(serviceWorkerPath,false);
+    }
+    _initiateTokenUpdateIfNeeded () {
+        Utils.log.debug('token updating: for vapid: ' + Device.getVAPID() + 'notification state:' + Device.getKaiOsNotificationState());
+        var lastTokenUpdateTs = Device.getLastTokenUpdateTs(); // when No Registration happens for kaios , it returns current timestamp
+        // If Registration tried by user do registration on every app launch..
+        if (lastTokenUpdateTs !== null) {
+            Utils.log.debug('Updating token initated on app launch');
+            this._registerCTNotifications(this.swpath,false);
+        }
+    }
 }

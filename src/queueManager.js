@@ -183,6 +183,14 @@ export default class QueueManager {
           if (response.g) {
             Device.setGUID(response.g);
           }
+          if (response.KVAPID) {
+            Utils.log.debug(`kaios vapid recieved: ${response.KVAPID}`);
+            Device.setVAPID(response.KVAPID);
+          }
+          if (response.hasOwnProperty('kaiosPush')){
+              Utils.log.debug(`kaios notification status: ${response.kaiosPush}`);
+              Device.setKaiOsNotificationState(response.kaiosPush);
+          }
           _this._removeEvents(maxEventId, maxProfilesId);
           _this._saveEvents();
           _this._updateARP(response);
@@ -220,7 +228,61 @@ export default class QueueManager {
       }
     });
   }
-  _saveEvents() {
+    // unregister token for existing user.
+    _unregisterTokenApiCall(unregisterData,callback) {
+
+        // this._uploading = true; Do i need this for Kaios ?
+
+        var url = this._getEndPoint();
+        url = this._addToURL(url, 'sn', Utils.getNow()); // send epoch seconds as seq number
+        url = this._addARPToRequest(url);
+        url = this._addToURL(url, "r", new Date().getTime()); // add epoch millis to beat caching of the URL
+
+        let meta = {
+            id: Account.getAccountId(),
+            "SDK Version": version,
+            s: `${Session.getSessionId()}`,
+        };
+
+        if (Account.getAppVersion()) {
+            meta.Version = `${Account.getAppVersion()}`;
+        }
+
+        var guid = unregisterData.g;
+        if (guid) {
+            url = this._addToURL(url, "gc", guid);
+            meta.g = guid;
+        }
+
+        Utils.log.debug(`kaios vapid req with request url : ${url} and meta: ${meta}`);
+
+        url = this._addToURL(url, "d", Helpers.compressData(JSON.stringify(meta)));
+
+
+        Utils.log.debug(`Sending kaios-Token unregister request: ${JSON.stringify(unregisterData)}`);
+        var data = [];
+        data.push(unregisterData);
+        new Request(url,data).send( function(status, response) {
+            // _this._uploading = false;
+            response = response || {};
+            Utils.log.debug(`kaios req handling response with status: ${status} and data: ${JSON.stringify(response)}`);
+
+            try {
+                if (status === 200) {
+
+                        //Device.setGUID(response.KVAPID);
+                        if (typeof callback === 'function') {
+                            callback(); // call callback to register subscription to kaios servers.
+                        }
+                } else {
+                    Utils.log.error(`kaios vapid request failed with status ${status}.`);
+                }
+            } catch (e) {
+                Utils.log.error(`kaios vapid request failed: ${e.message}.`);
+            }
+        });
+    }
+    _saveEvents() {
     StorageManager.save(_getSavedEventsKey(), this._unsentEvents);
     StorageManager.save(_getSavedProfilesKey(), this._unsentProfiles);
   }

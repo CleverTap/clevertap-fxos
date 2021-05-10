@@ -1,3 +1,5 @@
+import Device from "./device";
+
 var _accountId = null;
 var _region = null;
 var _appVersion = null;
@@ -17,6 +19,7 @@ export default class Account {
   }
   static setAppVersion(version) {
     _appVersion = version;
+    Device.setAppVersion(version);
   }
   static getAppVersion() {
     return _appVersion;
