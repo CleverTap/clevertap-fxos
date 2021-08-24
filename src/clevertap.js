@@ -26,6 +26,7 @@ export default class CleverTap {
     }
     Account.setAccountId(id);
     Account.setRegion(region);
+    Device.setVAPIDState(false);
     this.api = new CleverTapAPI(Object.assign({}, this.options));
     this.session = new SessionHandler(this.api);
     this.user = new UserHandler(this.api);
@@ -62,16 +63,22 @@ export default class CleverTap {
     Utils.log.debug('register initiated, vapid: ' + Device.getVAPID());
 
     // kaios-Vapid and Push Notification on dashboard should be enabled
-    if(Device.getVAPID() && Device.getKaiOsNotificationState()) {
-      if(this.api !== null) {
-          Utils.log.debug('registering SW callled');
-          this.api.registerSW(serviceWorkerPath,unregister);
+    if(Device.getVAPIDState){
+      if(Device.getVAPID() && Device.getKaiOsNotificationState()) {
+        if(this.api !== null) {
+            Utils.log.debug('registering SW callled');
+            this.api.registerSW(serviceWorkerPath,unregister);
+        } else {
+            Utils.log.debug('clevertap-Api context not available ' + this.api);
+        }
       } else {
-          Utils.log.debug('clevertap-Api context not available ' + this.api);
+          Utils.log.debug('Service Worker Subscription from client failed: Vapid-key: ' + Device.getVAPID() + ' Notification Enabled:' + Device.getKaiOsNotificationState());
       }
-    } else {
-        Utils.log.debug('Service Worker Subscription from client failed: Vapid-key: ' + Device.getVAPID() + ' Notification Enabled:' + Device.getKaiOsNotificationState());
+    }else{
+      Utils.log.debug('setting timeout and calling _registerCTNotifications again in 2s');
+      setTimeout(this._registerCTNotifications,2000,serviceWorkerPath,unregister);
     }
+    
   }
     unregisterCTNotifications(serviceWorkerPath) {
         this._registerCTNotifications(serviceWorkerPath,true);

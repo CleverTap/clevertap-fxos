@@ -143,4 +143,11 @@ export default class StorageManager {
     }
     return `${Constants.CHARGED_ID}_${accountId}`;
   }
+  static getVAPIDStateKey(){
+    const accountId = Account.getAccountId();
+    if(!accountId){
+      return null;
+    }
+    return `${Constants.VAPID_STATE_KEY}_${accountId}`;
+  }
 }

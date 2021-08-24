@@ -1,6 +1,6 @@
 {
     "name": "clevertap-fxos",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "CleverTap Firefox OS SDK",
     "main": "clevertap.js",
     "scripts": {
