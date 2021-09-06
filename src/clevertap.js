@@ -26,7 +26,7 @@ export default class CleverTap {
     }
     Account.setAccountId(id);
     Account.setRegion(region);
-    if(Device.getVAPIDState === null){
+    if(Device.getVAPIDState() === null){
       Device.setVAPIDState(false);
     }
     this.api = new CleverTapAPI(Object.assign({}, this.options));
@@ -65,7 +65,7 @@ export default class CleverTap {
     Utils.log.debug('register initiated, vapid: ' + Device.getVAPID());
 
     // kaios-Vapid and Push Notification on dashboard should be enabled
-    if(Device.getVAPIDState){
+    if(Device.getVAPIDState()){
       if(Device.getVAPID() && Device.getKaiOsNotificationState()) {
         if(this.api !== null) {
             Utils.log.debug('registering SW callled');
