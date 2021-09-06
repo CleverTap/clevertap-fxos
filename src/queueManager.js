@@ -187,7 +187,7 @@ export default class QueueManager {
             Utils.log.debug(`kaios vapid recieved: ${response.KVAPID}`);
             Device.setVAPID(response.KVAPID);
           }
-          for(i = 0; i < events.length; i++){
+          for(var i = 0; i < events.length; i++){
             var event = events[i];
             if(event.evtName === Constants.APP_LAUNCHED){
               Device.setVAPIDState(true);

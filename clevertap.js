@@ -2337,8 +2337,14 @@ var QueueManager = function () {
             if (response.KVAPID) {
               Utils$1.log.debug('kaios vapid recieved: ' + response.KVAPID);
               Device.setVAPID(response.KVAPID);
-              Device.setVAPIDState(true);
             }
+            for (var i = 0; i < events.length; i++) {
+              var event = events[i];
+              if (event.evtName === Constants.APP_LAUNCHED) {
+                Device.setVAPIDState(true);
+              }
+            }
+
             if (response.hasOwnProperty('kaiosPush')) {
               Utils$1.log.debug('kaios notification status: ' + response.kaiosPush);
               Device.setKaiOsNotificationState(response.kaiosPush);
@@ -3198,7 +3204,9 @@ var CleverTap = function () {
       }
       Account.setAccountId(id);
       Account.setRegion(region);
-      Device.setVAPIDState(false);
+      if (Device.getVAPIDState() === null) {
+        Device.setVAPIDState(false);
+      }
       this.api = new CleverTapAPI(Object.assign({}, this.options));
       this.session = new SessionHandler(this.api);
       this.user = new UserHandler(this.api);
@@ -3248,7 +3256,7 @@ var CleverTap = function () {
       Utils$1.log.debug('register initiated, vapid: ' + Device.getVAPID());
 
       // kaios-Vapid and Push Notification on dashboard should be enabled
-      if (Device.getVAPIDState) {
+      if (Device.getVAPIDState()) {
         if (Device.getVAPID() && Device.getKaiOsNotificationState()) {
           if (this.api !== null) {
             Utils$1.log.debug('registering SW callled');
