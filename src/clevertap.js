@@ -26,7 +26,9 @@ export default class CleverTap {
     }
     Account.setAccountId(id);
     Account.setRegion(region);
-    Device.setVAPIDState(false);
+    if(Device.getVAPIDState === null){
+      Device.setVAPIDState(false);
+    }
     this.api = new CleverTapAPI(Object.assign({}, this.options));
     this.session = new SessionHandler(this.api);
     this.user = new UserHandler(this.api);
