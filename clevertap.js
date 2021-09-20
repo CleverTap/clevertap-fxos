@@ -2138,7 +2138,7 @@ var Request = function () {
   return Request;
 }();
 
-var version = 10000;
+var version = 10101;
 
 var _loadSavedUnsentEvents = function _loadSavedUnsentEvents(unsentKey) {
   var savedUnsentEvents = StorageManager.read(unsentKey);
@@ -2837,7 +2837,7 @@ var CleverTapAPI = function () {
 
       var publicVapidKey = Device.getVAPID();
       var subscriptionData = {};
-      console.log("subscribing push notification sw " + publicVapidKey);
+      console.log("Base 64 VAPID Key " + this.urlBase64ToUint8Array(publicVapidKey));
       swRegistration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: this.urlBase64ToUint8Array(publicVapidKey)
@@ -2850,6 +2850,8 @@ var CleverTapAPI = function () {
         _this5._startuploadPushToken(subscriptionData);
         var curTs = new Date().getTime();
         Device.setLastTokenUpdateTs(curTs);
+      }).catch(function (error) {
+        console.error('Subcription error ', error);
       });
     }
   }, {
@@ -3248,6 +3250,8 @@ var CleverTap = function () {
   }, {
     key: '_registerCTNotifications',
     value: function _registerCTNotifications(serviceWorkerPath, unregister) {
+      var _this = this;
+
       if (!serviceWorkerPath) {
         serviceWorkerPath = this.swpath;
       } else {
@@ -3256,6 +3260,7 @@ var CleverTap = function () {
       Utils$1.log.debug('register initiated, vapid: ' + Device.getVAPID());
 
       // kaios-Vapid and Push Notification on dashboard should be enabled
+      console.log('Device VAPID State ' + Device.getVAPIDState());
       if (Device.getVAPIDState()) {
         if (Device.getVAPID() && Device.getKaiOsNotificationState()) {
           if (this.api !== null) {
@@ -3269,7 +3274,9 @@ var CleverTap = function () {
         }
       } else {
         Utils$1.log.debug('setting timeout and calling _registerCTNotifications again in 2s');
-        setTimeout(this._registerCTNotifications, 2000, serviceWorkerPath, unregister);
+        setTimeout(function () {
+          _this._registerCTNotifications(serviceWorkerPath, unregister);
+        }, 2000);
       }
     }
   }, {

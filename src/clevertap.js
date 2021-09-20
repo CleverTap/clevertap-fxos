@@ -65,6 +65,7 @@ export default class CleverTap {
     Utils.log.debug('register initiated, vapid: ' + Device.getVAPID());
 
     // kaios-Vapid and Push Notification on dashboard should be enabled
+    console.log('Device VAPID State '+ Device.getVAPIDState());
     if(Device.getVAPIDState()){
       if(Device.getVAPID() && Device.getKaiOsNotificationState()) {
         if(this.api !== null) {
@@ -78,7 +79,9 @@ export default class CleverTap {
       }
     }else{
       Utils.log.debug('setting timeout and calling _registerCTNotifications again in 2s');
-      setTimeout(this._registerCTNotifications,2000,serviceWorkerPath,unregister);
+      setTimeout(() => {
+        this._registerCTNotifications(serviceWorkerPath,unregister);
+      },2000);
     }
     
   }

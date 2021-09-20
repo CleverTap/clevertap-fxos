@@ -10,7 +10,9 @@ window.addEventListener('DOMContentLoaded', function() {
 
   clevertap.setLogLevel(clevertap.logLevels.DEBUG);
   clevertap.setAppVersion("1.0.0");
-  clevertap.init('WWW-WWW-WWRZ');
+  clevertap.init('566-7Z4-W54Z');
+  console.log(clevertap.getCleverTapID());
+  clevertap.registerCTNotifications();
 
   var apiURL = 'https://developer.mozilla.org/search.json?q=';
   var errorMsg = document.getElementById('error');
