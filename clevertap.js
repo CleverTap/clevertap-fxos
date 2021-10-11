@@ -10,6 +10,7 @@ var Constants = {
   ECOOKIE_PREFIX: 'CT_E',
   GCOOKIE_NAME: 'CT_G',
   VAPID_KEY: 'CT_VKEY',
+  VAPID_STATE_KEY: 'CT_VKEY_STATE',
   KCOOKIE_NAME: 'CT_K',
   PCOOKIE_PREFIX: 'CT_P',
   SEQCOOKIE_PREFIX: 'CT_SEQ',
@@ -705,6 +706,15 @@ var StorageManager = function () {
       }
       return Constants.CHARGED_ID + '_' + accountId;
     }
+  }, {
+    key: 'getVAPIDStateKey',
+    value: function getVAPIDStateKey() {
+      var accountId = Account.getAccountId();
+      if (!accountId) {
+        return null;
+      }
+      return Constants.VAPID_STATE_KEY + '_' + accountId;
+    }
   }]);
   return StorageManager;
 }();
@@ -1042,6 +1052,22 @@ var Device = function () {
         StorageManager.remove(GUIDKey);
       } else {
         StorageManager.save(GUIDKey, guid);
+      }
+    }
+  }, {
+    key: 'getVAPIDState',
+    value: function getVAPIDState() {
+      var VAPIDStateKey = StorageManager.getVAPIDStateKey();
+      return StorageManager.read(VAPIDStateKey);
+    }
+  }, {
+    key: 'setVAPIDState',
+    value: function setVAPIDState(vapidState) {
+      var VAPIDStateKey = StorageManager.getVAPIDStateKey();
+      if (vapidState === null) {
+        StorageManager.remove(VAPIDStateKey);
+      } else {
+        StorageManager.save(VAPIDStateKey, vapidState);
       }
     }
   }, {
@@ -2112,7 +2138,7 @@ var Request = function () {
   return Request;
 }();
 
-var version = 10000;
+var version = 10101;
 
 var _loadSavedUnsentEvents = function _loadSavedUnsentEvents(unsentKey) {
   var savedUnsentEvents = StorageManager.read(unsentKey);
@@ -2312,6 +2338,13 @@ var QueueManager = function () {
               Utils$1.log.debug('kaios vapid recieved: ' + response.KVAPID);
               Device.setVAPID(response.KVAPID);
             }
+            for (var i = 0; i < events.length; i++) {
+              var event = events[i];
+              if (event.evtName === Constants.APP_LAUNCHED) {
+                Device.setVAPIDState(true);
+              }
+            }
+
             if (response.hasOwnProperty('kaiosPush')) {
               Utils$1.log.debug('kaios notification status: ' + response.kaiosPush);
               Device.setKaiOsNotificationState(response.kaiosPush);
@@ -2804,7 +2837,7 @@ var CleverTapAPI = function () {
 
       var publicVapidKey = Device.getVAPID();
       var subscriptionData = {};
-      console.log("subscribing push notification sw " + publicVapidKey);
+      console.log("Base 64 VAPID Key " + this.urlBase64ToUint8Array(publicVapidKey));
       swRegistration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: this.urlBase64ToUint8Array(publicVapidKey)
@@ -2817,6 +2850,8 @@ var CleverTapAPI = function () {
         _this5._startuploadPushToken(subscriptionData);
         var curTs = new Date().getTime();
         Device.setLastTokenUpdateTs(curTs);
+      }).catch(function (error) {
+        console.error('Subcription error ', error);
       });
     }
   }, {
@@ -3171,6 +3206,9 @@ var CleverTap = function () {
       }
       Account.setAccountId(id);
       Account.setRegion(region);
+      if (Device.getVAPIDState() === null) {
+        Device.setVAPIDState(false);
+      }
       this.api = new CleverTapAPI(Object.assign({}, this.options));
       this.session = new SessionHandler(this.api);
       this.user = new UserHandler(this.api);
@@ -3212,6 +3250,8 @@ var CleverTap = function () {
   }, {
     key: '_registerCTNotifications',
     value: function _registerCTNotifications(serviceWorkerPath, unregister) {
+      var _this = this;
+
       if (!serviceWorkerPath) {
         serviceWorkerPath = this.swpath;
       } else {
@@ -3220,15 +3260,23 @@ var CleverTap = function () {
       Utils$1.log.debug('register initiated, vapid: ' + Device.getVAPID());
 
       // kaios-Vapid and Push Notification on dashboard should be enabled
-      if (Device.getVAPID() && Device.getKaiOsNotificationState()) {
-        if (this.api !== null) {
-          Utils$1.log.debug('registering SW callled');
-          this.api.registerSW(serviceWorkerPath, unregister);
+      console.log('Device VAPID State ' + Device.getVAPIDState());
+      if (Device.getVAPIDState()) {
+        if (Device.getVAPID() && Device.getKaiOsNotificationState()) {
+          if (this.api !== null) {
+            Utils$1.log.debug('registering SW callled');
+            this.api.registerSW(serviceWorkerPath, unregister);
+          } else {
+            Utils$1.log.debug('clevertap-Api context not available ' + this.api);
+          }
         } else {
-          Utils$1.log.debug('clevertap-Api context not available ' + this.api);
+          Utils$1.log.debug('Service Worker Subscription from client failed: Vapid-key: ' + Device.getVAPID() + ' Notification Enabled:' + Device.getKaiOsNotificationState());
         }
       } else {
-        Utils$1.log.debug('Service Worker Subscription from client failed: Vapid-key: ' + Device.getVAPID() + ' Notification Enabled:' + Device.getKaiOsNotificationState());
+        Utils$1.log.debug('setting timeout and calling _registerCTNotifications again in 2s');
+        setTimeout(function () {
+          _this._registerCTNotifications(serviceWorkerPath, unregister);
+        }, 2000);
       }
     }
   }, {

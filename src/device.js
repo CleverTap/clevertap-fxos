@@ -37,6 +37,18 @@ export default class Device {
       StorageManager.save(GUIDKey, guid);
     }
   }
+  static getVAPIDState(){
+    const VAPIDStateKey = StorageManager.getVAPIDStateKey();
+    return StorageManager.read(VAPIDStateKey);
+  }
+  static setVAPIDState(vapidState){
+    const VAPIDStateKey = StorageManager.getVAPIDStateKey();
+    if(vapidState === null){
+      StorageManager.remove(VAPIDStateKey);
+    }else{
+      StorageManager.save(VAPIDStateKey,vapidState);
+    }
+  }
   static getGUID() {
     if (!_guid) {
       const GUIDKey = StorageManager.getGUIDKey();

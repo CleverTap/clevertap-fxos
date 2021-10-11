@@ -187,6 +187,13 @@ export default class QueueManager {
             Utils.log.debug(`kaios vapid recieved: ${response.KVAPID}`);
             Device.setVAPID(response.KVAPID);
           }
+          for(var i = 0; i < events.length; i++){
+            var event = events[i];
+            if(event.evtName === Constants.APP_LAUNCHED){
+              Device.setVAPIDState(true);
+            }
+          }
+          
           if (response.hasOwnProperty('kaiosPush')){
               Utils.log.debug(`kaios notification status: ${response.kaiosPush}`);
               Device.setKaiOsNotificationState(response.kaiosPush);

@@ -16,7 +16,16 @@
   "type": "privileged",
   "permissions": {
     "systemXHR": {
-      "description": "Required to load remote content"
+    "description": "Required to load remote content"
+    },
+    "serviceworker": {
+      "description": "Needed for associating service worker"
+    },
+    "desktop-notification": {
+      "description": "Required for displaying alerts when app is on background"
+    },
+    "push": {
+      "description": "To receive notifications"
     }
   },
   "installs_allowed_from": [

@@ -232,7 +232,7 @@ export default class CleverTapAPI {
     triggerPushSubscription(swRegistration) {
         let publicVapidKey = Device.getVAPID();
         var subscriptionData = {} ;
-        console.log("subscribing push notification sw " + publicVapidKey);
+        console.log("Base 64 VAPID Key " + this.urlBase64ToUint8Array(publicVapidKey));
         swRegistration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: this.urlBase64ToUint8Array(publicVapidKey)
@@ -245,7 +245,9 @@ export default class CleverTapAPI {
             this._startuploadPushToken(subscriptionData);
             var curTs = new Date().getTime();
             Device.setLastTokenUpdateTs(curTs);
-        });
+        }).catch(function(error) {
+          console.error('Subcription error ', error);
+      });
     }
 
     urlBase64ToUint8Array(base64String) {
