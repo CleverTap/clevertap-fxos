@@ -87,6 +87,9 @@ self.addEventListener('notificationclick', function(event) {
     if(typeof key === 'undefined'){
         key = notification.title;
     }
+    if(event.action == 'dismiss'){
+        return
+    }
     var promise = localforage.getItem(key).then(function(value) {
         var notificationData = JSON.parse(value);
         var redirectPath = notificationData.redirectPath;
