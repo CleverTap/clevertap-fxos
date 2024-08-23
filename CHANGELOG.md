@@ -3,7 +3,7 @@
 
  Version 1.1.2 *(23 August, 2024)*
  ---------------------------------
-- Fixes a bug where the notification click event was raised even when the 'Dismiss' button was pressed.
+- Fixes a bug where the notification clicked event was raised even when the 'Dismiss' button was pressed.
 
  Version 1.1.1 *(11 October, 2021)*
  ---------------------------------
