@@ -3099,9 +3099,11 @@ var EventHandler = function () {
 }();
 
 var _domain = 'wzrkt.com';
+var customDomain = 'clevertap-prod.com';
 
 var OPTIONS = {
   domain: _domain,
+  customDomain: customDomain,
   protocol: 'https:',
   enablePersonalization: true,
   eventUploadInterval: 1 * 1000, // 1s
@@ -3199,7 +3201,7 @@ var CleverTap = function () {
 
   createClass(CleverTap, [{
     key: 'init',
-    value: function init(id, region) {
+    value: function init(id, region, config) {
       if (Utils$1.isEmptyString(id)) {
         Utils$1.log.error(ErrorManager.MESSAGES.init);
         return;
@@ -3209,6 +3211,15 @@ var CleverTap = function () {
       if (Device.getVAPIDState() === null) {
         Device.setVAPIDState(false);
       }
+
+      // If config is passed and has a key called `customDomainKey` then use that as the domain
+      if (config && Object.keys(config).includes('customDomainKey')) {
+        this.options.domain = config.customDomainKey + '.' + this.options.customDomain;
+        console.log('Setting custom domain to: ' + this.options.customDomain + ' with key ' + config.customDomainKey);
+      }
+
+      console.log('CleverTap domain: ' + this.options.domain);
+
       this.api = new CleverTapAPI(Object.assign({}, this.options));
       this.session = new SessionHandler(this.api);
       this.user = new UserHandler(this.api);

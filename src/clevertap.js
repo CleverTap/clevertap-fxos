@@ -31,7 +31,7 @@ export default class CleverTap {
     }
 
     // If config is passed and has a key called `customDomainKey` then use that as the domain
-    if (config && config?.customDomainKey) {
+    if (config && Object.keys(config).includes('customDomainKey')) {
       this.options.domain = `${config.customDomainKey}.${this.options.customDomain}`;
       console.log(`Setting custom domain to: ${this.options.customDomain} with key ${config.customDomainKey}`);
     }
