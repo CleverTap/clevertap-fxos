@@ -72,6 +72,10 @@ export default class QueueManager {
     this._scheduleEvents();
   }
   _getEndPoint() {
+    // If customDomain is set do we need to change anything in the url 
+    // For Custom in1.j1.clevertap-prod.com/a2?t=77 
+    // For Regular in1.wzrkt.com/a2?t=77
+
     let domain = this.options.domain;
     if (Account.getRegion()) {
       domain = Account.getRegion() + '.' + this.options.domain;
