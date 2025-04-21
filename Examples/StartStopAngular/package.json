@@ -13,7 +13,7 @@
     "license": "ISC",
     "dependencies": {
         "angular": "^1.4.1",
-        "angular-route": "^1.4.1",
+        "angular-route": "^1.8.2",
         "clevertap-fxos": "file:../../",
         "startstop": "file:local_modules/startstop"
     },
