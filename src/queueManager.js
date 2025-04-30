@@ -72,15 +72,15 @@ export default class QueueManager {
     this._scheduleEvents();
   }
   _getEndPoint() {
-    // If customDomain is set do we need to change anything in the url 
-    // For Custom in1.j1.clevertap-prod.com/a2?t=77 
-    // For Regular in1.wzrkt.com/a2?t=77
-
-    let domain = this.options.domain;
-    if (Account.getRegion()) {
-      domain = Account.getRegion() + '.' + this.options.domain;
+    if(localStorage.getItem('X-WZRK-RD')){
+      return this.options.protocol + '//' + localStorage.getItem('X-WZRK-RD') + '/a2?t=77';
+    } else {
+      let domain = this.options.domain;
+      if (Account.getRegion()) {
+        domain = Account.getRegion() + '.' + this.options.domain;
+      }
+      return this.options.protocol + '//' + domain + '/a2?t=77';
     }
-    return this.options.protocol + '//' + domain + '/a2?t=77';
   }
   _unsentCount() {
     return this._unsentEvents.length + this._unsentProfiles.length;
@@ -225,6 +225,10 @@ export default class QueueManager {
           _this._sendEvents(callback);
 
         // all other errors
+        } else if( status === 301) {
+          Utils.log.debug(`Redirect to: ${response.header['X-WZRK-RD']}`);
+          localStorage.setItem('X-WZRK-RD', response.header['X-WZRK-RD']);
+          _this._sendEvents(callback);
         } else {
           Utils.log.error(`Events upload failed with status ${status}.  Will retry.`);
           _this._scheduleRetry();

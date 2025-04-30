@@ -19,7 +19,7 @@ export default class CleverTap {
     this.logLevels = Utils.logLevels;
     this.swpath = '/serviceWorker.js';
   }
-  init(id, region, config) {
+  init(id, region) {
     if (Utils.isEmptyString(id)) {
       Utils.log.error(ErrorManager.MESSAGES.init);
       return;
@@ -29,14 +29,6 @@ export default class CleverTap {
     if(Device.getVAPIDState() === null){
       Device.setVAPIDState(false);
     }
-
-    // If config is passed and has a key called `customDomainKey` then use that as the domain
-    if (config && Object.keys(config).includes('customDomainKey')) {
-      this.options.domain = `${config.customDomainKey}.${this.options.customDomain}`;
-      console.log(`Setting custom domain to: ${this.options.customDomain} with key ${config.customDomainKey}`);
-    }
-
-    console.log('CleverTap domain: ' + this.options.domain);
 
     this.api = new CleverTapAPI(Object.assign({}, this.options));
     this.session = new SessionHandler(this.api);
