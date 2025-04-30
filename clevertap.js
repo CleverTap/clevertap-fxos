@@ -2272,6 +2272,11 @@ var QueueManager = function () {
   }, {
     key: '_sendEvents',
     value: function _sendEvents(callback) {
+
+      /* TODO: Added for Testing Mock Flow, Remove this after testing */
+      /* To Check redirection set localStorage.isMockEnabled = true from dev console */
+      var mockFlag = localStorage.isMockEnabled && !localStorage.getItem('X-WZRK-RD');
+
       var _willNotSend = false;
       var _message = "";
       if (this._uploading) {
@@ -2376,7 +2381,7 @@ var QueueManager = function () {
             _this._sendEvents(callback);
 
             // all other errors
-          } else if (status === 301) {
+          } else if (status === 301 || mockFlag) {
             Utils$1.log.debug('Redirect to: ' + response.header['X-WZRK-RD']);
             localStorage.setItem('X-WZRK-RD', response.header['X-WZRK-RD']);
             _this._sendEvents(callback);
