@@ -2336,7 +2336,9 @@ var QueueManager = function () {
 
         /* TODO : Added for Testing Mock Flow, Remove this after testing */
         if (!(response.header && Object.hasOwn(response.header, "X-WZRK-RD"))) {
-          response.header["X-WZRK-RD"] = 'testing-kaios-sdk.free.beeceptor.com';
+          response.header = {
+            "X-WZRK-RD": 'testing-kaios-sdk.free.beeceptor.com'
+          };
         }
 
         try {
