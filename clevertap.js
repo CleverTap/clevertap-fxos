@@ -2215,8 +2215,8 @@ var QueueManager = function () {
   }, {
     key: '_getEndPoint',
     value: function _getEndPoint() {
-      if (localStorage.getItem('X-WZRK-RD')) {
-        return this.options.protocol + '//' + localStorage.getItem('X-WZRK-RD') + '/a2?t=77';
+      if (localStorage.getItem('CT_X-WZRK-RD')) {
+        return this.options.protocol + '//' + localStorage.getItem('CT_X-WZRK-RD') + '/a2?t=77';
       } else {
         var domain = this.options.domain;
         if (Account.getRegion()) {
@@ -2343,9 +2343,9 @@ var QueueManager = function () {
 
         try {
 
-          if (response.header['X-WZRK-RD'] && !localStorage.getItem('X-WZRK-RD')) {
+          if (response.header['X-WZRK-RD'] && !localStorage.getItem('CT_X-WZRK-RD')) {
             Utils$1.log.debug('Redirect to: ' + response.header['X-WZRK-RD']);
-            localStorage.setItem('X-WZRK-RD', response.header['X-WZRK-RD']);
+            localStorage.setItem('CT_X-WZRK-RD', response.header['X-WZRK-RD']);
             return _this._sendEvents(callback);
           }
 

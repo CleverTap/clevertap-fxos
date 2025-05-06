@@ -72,8 +72,8 @@ export default class QueueManager {
     this._scheduleEvents();
   }
   _getEndPoint() {
-    if(localStorage.getItem('X-WZRK-RD')){
-      return this.options.protocol + '//' + localStorage.getItem('X-WZRK-RD') + '/a2?t=77';
+    if(localStorage.getItem('CT_X-WZRK-RD')){
+      return this.options.protocol + '//' + localStorage.getItem('CT_X-WZRK-RD') + '/a2?t=77';
     } else {
       let domain = this.options.domain;
       if (Account.getRegion()) {
@@ -192,9 +192,9 @@ export default class QueueManager {
 
       try {
 
-        if(response.header['X-WZRK-RD'] && !localStorage.getItem('X-WZRK-RD')){
+        if(response.header['X-WZRK-RD'] && !localStorage.getItem('CT_X-WZRK-RD')){
           Utils.log.debug(`Redirect to: ${response.header['X-WZRK-RD']}`);
-          localStorage.setItem('X-WZRK-RD', response.header['X-WZRK-RD']);
+          localStorage.setItem('CT_X-WZRK-RD', response.header['X-WZRK-RD']);
           return _this._sendEvents(callback);
         } 
 
