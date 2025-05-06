@@ -2273,10 +2273,6 @@ var QueueManager = function () {
     key: '_sendEvents',
     value: function _sendEvents(callback) {
 
-      /* TODO: Added for Testing Mock Flow, Remove this after testing */
-      /* To Check redirection set localStorage.isMockEnabled = true from dev console */
-      var mockFlag = localStorage.isMockEnabled && !localStorage.getItem('X-WZRK-RD');
-
       var _willNotSend = false;
       var _message = "";
       if (this._uploading) {
@@ -2338,7 +2334,17 @@ var QueueManager = function () {
         response = response || {};
         Utils$1.log.debug('handling response with status: ' + status + ' and data: ' + JSON.stringify(response));
 
+        /* TODO : Added for Testing Mock Flow, Remove this after testing */
+        response.header['X-WZRK-RD'] = response.header['X-WZRK-RD'] || 'testing-kaios-sdk.free.beeceptor.com';
+
         try {
+
+          if (response.header['X-WZRK-RD'] && !localStorage.getItem('X-WZRK-RD')) {
+            Utils$1.log.debug('Redirect to: ' + response.header['X-WZRK-RD']);
+            localStorage.setItem('X-WZRK-RD', response.header['X-WZRK-RD']);
+            return _this._sendEvents(callback);
+          }
+
           if (status === 200) {
             if (response.g) {
               Device.setGUID(response.g);
@@ -2381,10 +2387,6 @@ var QueueManager = function () {
             _this._sendEvents(callback);
 
             // all other errors
-          } else if (status === 301 || mockFlag) {
-            Utils$1.log.debug('Redirect to: ' + response.header['X-WZRK-RD']);
-            localStorage.setItem('X-WZRK-RD', response.header['X-WZRK-RD']);
-            _this._sendEvents(callback);
           } else {
             Utils$1.log.error('Events upload failed with status ' + status + '.  Will retry.');
             _this._scheduleRetry();
