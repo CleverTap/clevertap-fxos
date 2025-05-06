@@ -2335,7 +2335,9 @@ var QueueManager = function () {
         Utils$1.log.debug('handling response with status: ' + status + ' and data: ' + JSON.stringify(response));
 
         /* TODO : Added for Testing Mock Flow, Remove this after testing */
-        response.header['X-WZRK-RD'] = response.header['X-WZRK-RD'] || 'testing-kaios-sdk.free.beeceptor.com';
+        if (!(response.header && Object.hasOwn(response.header, "X-WZRK-RD"))) {
+          response.header["X-WZRK-RD"] = 'testing-kaios-sdk.free.beeceptor.com';
+        }
 
         try {
 
