@@ -73,7 +73,7 @@ export default class QueueManager {
   }
   _getEndPoint() {
     if(localStorage.getItem('CT_X-WZRK-RD')){
-      return this.options.protocol + '//' + Account.getRegion() + '.' + localStorage.getItem('CT_X-WZRK-RD') + '/a2?t=77';
+      return this.options.protocol + '//' + localStorage.getItem('CT_X-WZRK-RD') + '/a2?t=77';
     } else {
       let domain = this.options.domain;
       if (Account.getRegion()) {

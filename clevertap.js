@@ -2228,7 +2228,7 @@ var QueueManager = function () {
     key: '_getEndPoint',
     value: function _getEndPoint() {
       if (localStorage.getItem('CT_X-WZRK-RD')) {
-        return this.options.protocol + '//' + Account.getRegion() + '.' + localStorage.getItem('CT_X-WZRK-RD') + '/a2?t=77';
+        return this.options.protocol + '//' + localStorage.getItem('CT_X-WZRK-RD') + '/a2?t=77';
       } else {
         var domain = this.options.domain;
         if (Account.getRegion()) {
