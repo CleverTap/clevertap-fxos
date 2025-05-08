@@ -262,6 +262,12 @@ const isAnonymousDevice = function () {
   return isObjectEmpty(identitiesMap);
 };
 
+const isValidDomain = function (domain) {
+  const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-_]{1,63}\.)+[a-zA-Z]{2,}$/;
+  return domainRegex.test(domain);
+};
+
+
 export default {
   logLevels,
   setLogLevel,
@@ -295,4 +301,5 @@ export default {
   setEnum,
   reportError,
   isAnonymousDevice,
+  isValidDomain,
 };
