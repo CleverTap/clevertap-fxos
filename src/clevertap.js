@@ -19,7 +19,7 @@ export default class CleverTap {
     this.logLevels = Utils.logLevels;
     this.swpath = '/serviceWorker.js';
   }
-  init(id, region) {
+  init(id, region, config = {}) {
     if (Utils.isEmptyString(id)) {
       Utils.log.error(ErrorManager.MESSAGES.init);
       return;
@@ -28,6 +28,11 @@ export default class CleverTap {
     Account.setRegion(region);
     if(Device.getVAPIDState() === null){
       Device.setVAPIDState(false);
+    }
+
+    /* Override default options with custom domain */
+    if(Object.hasOwn(config, 'domain') && Utils.isValidDomain(config.domain)){
+      this.options.domain = config.domain;
     }
 
     this.api = new CleverTapAPI(Object.assign({}, this.options));

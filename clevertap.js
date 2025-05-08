@@ -491,6 +491,11 @@ var isAnonymousDevice = function isAnonymousDevice() {
     return isObjectEmpty(identitiesMap);
 };
 
+var isValidDomain = function isValidDomain(domain) {
+    var domainRegex = /^(?!:\/\/)([a-zA-Z0-9-_]{1,63}\.)+[a-zA-Z]{2,}$/;
+    return domainRegex.test(domain);
+};
+
 var Utils = {
     logLevels: logLevels,
     setLogLevel: setLogLevel,
@@ -523,7 +528,8 @@ var Utils = {
     removeFromStorage: removeFromStorage,
     setEnum: setEnum,
     reportError: reportError,
-    isAnonymousDevice: isAnonymousDevice
+    isAnonymousDevice: isAnonymousDevice,
+    isValidDomain: isValidDomain
 };
 
 var StorageManager = function () {
@@ -977,6 +983,11 @@ var isAnonymousDevice$1 = function isAnonymousDevice() {
     return isObjectEmpty$1(identitiesMap);
 };
 
+var isValidDomain$1 = function isValidDomain(domain) {
+    var domainRegex = /^(?!:\/\/)([a-zA-Z0-9-_]{1,63}\.)+[a-zA-Z]{2,}$/;
+    return domainRegex.test(domain);
+};
+
 var Utils$1 = {
     logLevels: logLevels$1,
     setLogLevel: setLogLevel$1,
@@ -1009,7 +1020,8 @@ var Utils$1 = {
     removeFromStorage: removeFromStorage$1,
     setEnum: setEnum$1,
     reportError: reportError$1,
-    isAnonymousDevice: isAnonymousDevice$1
+    isAnonymousDevice: isAnonymousDevice$1,
+    isValidDomain: isValidDomain$1
 };
 
 /* jshint bitwise: false, laxbreak: true */
@@ -3219,6 +3231,8 @@ var CleverTap = function () {
   createClass(CleverTap, [{
     key: 'init',
     value: function init(id, region) {
+      var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
       if (Utils$1.isEmptyString(id)) {
         Utils$1.log.error(ErrorManager.MESSAGES.init);
         return;
@@ -3227,6 +3241,11 @@ var CleverTap = function () {
       Account.setRegion(region);
       if (Device.getVAPIDState() === null) {
         Device.setVAPIDState(false);
+      }
+
+      /* Override default options with custom domain */
+      if (Object.hasOwn(config, 'domain') && Utils$1.isValidDomain(config.domain)) {
+        this.options.domain = config.domain;
       }
 
       this.api = new CleverTapAPI(Object.assign({}, this.options));
