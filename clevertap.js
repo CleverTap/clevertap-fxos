@@ -2346,13 +2346,6 @@ var QueueManager = function () {
         response = response || {};
         Utils$1.log.debug('handling response with status: ' + status + ' and data: ' + JSON.stringify(response));
 
-        /* TODO : Added for Testing Mock Flow, Remove this after testing */
-        if (!(response.header && Object.hasOwn(response.header, "X-WZRK-RD"))) {
-          response.header = {
-            "X-WZRK-RD": 'testing-kaios-sdk.free.beeceptor.com'
-          };
-        }
-
         try {
 
           if (response.header['X-WZRK-RD'] && !localStorage.getItem('CT_X-WZRK-RD')) {
