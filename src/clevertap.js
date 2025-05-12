@@ -31,7 +31,7 @@ export default class CleverTap {
     }
 
     /* Override default options with custom domain */
-    if(Object.hasOwn(config, 'domain') && Utils.isValidDomain(config.domain)){
+    if(config.hasOwnProperty('domain') && Utils.isValidDomain(config.domain)){
       this.options.domain = config.domain;
     }
 

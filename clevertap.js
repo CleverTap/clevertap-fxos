@@ -3237,7 +3237,7 @@ var CleverTap = function () {
       }
 
       /* Override default options with custom domain */
-      if (Object.hasOwn(config, 'domain') && Utils$1.isValidDomain(config.domain)) {
+      if (config.hasOwnProperty('domain') && Utils$1.isValidDomain(config.domain)) {
         this.options.domain = config.domain;
       }
 
