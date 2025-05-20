@@ -1,3 +1,4 @@
+import Constants from './constants';
 import Utils from './utils';
 
 export default class Request {
@@ -13,10 +14,9 @@ export default class Request {
     }
 
     function _onRequestLoad() {
-      var redirectHeader = request.getResponseHeader('X-WZRK-RD');
-      var headers = {
-        'X-WZRK-RD': redirectHeader
-      };
+      var redirectHeader = request.getResponseHeader(Constants.RESPONSE_HEADER_REDIRECT_KEY);
+      var headers = {};
+      headers[Constants.RESPONSE_HEADER_REDIRECT_KEY] = redirectHeader;
 
       if (callback) {
         callback(request.status, request.response, headers);

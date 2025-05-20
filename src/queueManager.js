@@ -186,9 +186,9 @@ export default class QueueManager {
 
       try {
 
-        if(headers['X-WZRK-RD'] && !localStorage.getItem(Constants.REDIRECT_HEADER)){
-          Utils.log.debug(`Redirect to: ${headers['X-WZRK-RD']}`);
-          localStorage.setItem(Constants.REDIRECT_HEADER, headers['X-WZRK-RD']);
+        if(headers[Constants.RESPONSE_HEADER_REDIRECT_KEY] && !localStorage.getItem(Constants.REDIRECT_HEADER)){
+          Utils.log.debug(`Redirect to: ${headers[Constants.RESPONSE_HEADER_REDIRECT_KEY]}`);
+          localStorage.setItem(Constants.REDIRECT_HEADER, headers[Constants.RESPONSE_HEADER_REDIRECT_KEY]);
           return _this._sendEvents(callback);
         } 
 

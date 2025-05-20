@@ -37,6 +37,7 @@ var Constants = {
   KAIOS_NOTIFICATION_STATE: 'CT_KOS_S',
   SW_UNREGISTER_FOR_VERSION: 'CT_SW_VR',
   APP_VERSION_KEY: "CT_AP_VR",
+  RESPONSE_HEADER_REDIRECT_KEY: "X-WZRK-RD",
   REDIRECT_HEADER: "CT_X-WZRK-RD",
   CUSTOM_DOMAIN: "CT_CUSTOM_DOMAIN"
 };
@@ -2132,10 +2133,9 @@ var Request = function () {
       }
 
       function _onRequestLoad() {
-        var redirectHeader = request.getResponseHeader('X-WZRK-RD');
-        var headers = {
-          'X-WZRK-RD': redirectHeader
-        };
+        var redirectHeader = request.getResponseHeader(Constants.RESPONSE_HEADER_REDIRECT_KEY);
+        var headers = {};
+        headers[Constants.RESPONSE_HEADER_REDIRECT_KEY] = redirectHeader;
 
         if (callback) {
           callback(request.status, request.response, headers);
@@ -2356,9 +2356,9 @@ var QueueManager = function () {
 
         try {
 
-          if (headers['X-WZRK-RD'] && !localStorage.getItem(Constants.REDIRECT_HEADER)) {
-            Utils$1.log.debug('Redirect to: ' + headers['X-WZRK-RD']);
-            localStorage.setItem(Constants.REDIRECT_HEADER, headers['X-WZRK-RD']);
+          if (headers[Constants.RESPONSE_HEADER_REDIRECT_KEY] && !localStorage.getItem(Constants.REDIRECT_HEADER)) {
+            Utils$1.log.debug('Redirect to: ' + headers[Constants.RESPONSE_HEADER_REDIRECT_KEY]);
+            localStorage.setItem(Constants.REDIRECT_HEADER, headers[Constants.RESPONSE_HEADER_REDIRECT_KEY]);
             return _this._sendEvents(callback);
           }
 
