@@ -9,6 +9,7 @@ import UserHandler from './userHandler';
 import UserLoginHandler from './userLoginHandler';
 import Utils from './utils';
 import Device from './device';
+import Constants from './constants';
 
 export default class CleverTap {
   constructor(old={}) {
@@ -33,7 +34,7 @@ export default class CleverTap {
     /* Override default options with custom domain */
     if(config.hasOwnProperty('domain') && Utils.isValidDomain(config.domain)){
       this.options.domain = config.domain;
-      localStorage.setItem('CT_CUSTOM_DOMAIN', config.domain);
+      localStorage.setItem(Constants.CUSTOM_DOMAIN, config.domain);
     }
 
     this.api = new CleverTapAPI(Object.assign({}, this.options));

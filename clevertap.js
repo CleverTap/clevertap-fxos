@@ -36,7 +36,9 @@ var Constants = {
   TOKEN_UPDATE_TS_KEY: 'CT_TK_TS',
   KAIOS_NOTIFICATION_STATE: 'CT_KOS_S',
   SW_UNREGISTER_FOR_VERSION: 'CT_SW_VR',
-  APP_VERSION_KEY: "CT_AP_VR"
+  APP_VERSION_KEY: "CT_AP_VR",
+  REDIRECT_HEADER: "CT_X-WZRK-RD",
+  CUSTOM_DOMAIN: "CT_CUSTOM_DOMAIN"
 };
 
 var dataNotSent = 'This property has been ignored.';
@@ -2233,8 +2235,8 @@ var QueueManager = function () {
     key: '_getEndPoint',
     value: function _getEndPoint() {
       /* If we have a redirect url and no custom domain is set, use the redirect url */
-      if (localStorage.getItem('CT_X-WZRK-RD') && !localStorage.getItem('CT_CUSTOM_DOMAIN')) {
-        return this.options.protocol + '//' + localStorage.getItem('CT_X-WZRK-RD') + '/a2?t=77';
+      if (localStorage.getItem(Constants.REDIRECT_HEADER) && !localStorage.getItem(Constants.CUSTOM_DOMAIN)) {
+        return this.options.protocol + '//' + localStorage.getItem(Constants.REDIRECT_HEADER) + '/a2?t=77';
       } else {
         var domain = this.options.domain;
         if (Account.getRegion()) {
@@ -2354,9 +2356,9 @@ var QueueManager = function () {
 
         try {
 
-          if (headers['X-WZRK-RD'] && !localStorage.getItem('CT_X-WZRK-RD')) {
+          if (headers['X-WZRK-RD'] && !localStorage.getItem(Constants.REDIRECT_HEADER)) {
             Utils$1.log.debug('Redirect to: ' + headers['X-WZRK-RD']);
-            localStorage.setItem('CT_X-WZRK-RD', headers['X-WZRK-RD']);
+            localStorage.setItem(Constants.REDIRECT_HEADER, headers['X-WZRK-RD']);
             return _this._sendEvents(callback);
           }
 
@@ -3245,7 +3247,7 @@ var CleverTap = function () {
       /* Override default options with custom domain */
       if (config.hasOwnProperty('domain') && Utils$1.isValidDomain(config.domain)) {
         this.options.domain = config.domain;
-        localStorage.setItem('CT_CUSTOM_DOMAIN', config.domain);
+        localStorage.setItem(Constants.CUSTOM_DOMAIN, config.domain);
       }
 
       this.api = new CleverTapAPI(Object.assign({}, this.options));

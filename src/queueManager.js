@@ -73,8 +73,8 @@ export default class QueueManager {
   }
   _getEndPoint() {
     /* If we have a redirect url and no custom domain is set, use the redirect url */
-    if(localStorage.getItem('CT_X-WZRK-RD') && !localStorage.getItem('CT_CUSTOM_DOMAIN')){
-      return this.options.protocol + '//' + localStorage.getItem('CT_X-WZRK-RD') + '/a2?t=77';
+    if(localStorage.getItem(Constants.REDIRECT_HEADER) && !localStorage.getItem(Constants.CUSTOM_DOMAIN)){
+      return this.options.protocol + '//' + localStorage.getItem(Constants.REDIRECT_HEADER) + '/a2?t=77';
     } else {
       let domain = this.options.domain;
       if (Account.getRegion()) {
@@ -186,9 +186,9 @@ export default class QueueManager {
 
       try {
 
-        if(headers['X-WZRK-RD'] && !localStorage.getItem('CT_X-WZRK-RD')){
+        if(headers['X-WZRK-RD'] && !localStorage.getItem(Constants.REDIRECT_HEADER)){
           Utils.log.debug(`Redirect to: ${headers['X-WZRK-RD']}`);
-          localStorage.setItem('CT_X-WZRK-RD', headers['X-WZRK-RD']);
+          localStorage.setItem(Constants.REDIRECT_HEADER, headers['X-WZRK-RD']);
           return _this._sendEvents(callback);
         } 
 
