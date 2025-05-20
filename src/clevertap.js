@@ -33,6 +33,7 @@ export default class CleverTap {
     /* Override default options with custom domain */
     if(config.hasOwnProperty('domain') && Utils.isValidDomain(config.domain)){
       this.options.domain = config.domain;
+      localStorage.setItem('CT_CUSTOM_DOMAIN', config.domain);
     }
 
     this.api = new CleverTapAPI(Object.assign({}, this.options));

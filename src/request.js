@@ -13,8 +13,13 @@ export default class Request {
     }
 
     function _onRequestLoad() {
+      var redirectHeader = request.getResponseHeader('X-WZRK-RD');
+      var headers = {
+        'X-WZRK-RD': redirectHeader
+      };
+
       if (callback) {
-        callback(request.status, request.response);
+        callback(request.status, request.response, headers);
       }
     }
 

@@ -72,7 +72,8 @@ export default class QueueManager {
     this._scheduleEvents();
   }
   _getEndPoint() {
-    if(localStorage.getItem('CT_X-WZRK-RD')){
+    /* If we have a redirect url and no custom domain is set, use the redirect url */
+    if(localStorage.getItem('CT_X-WZRK-RD') && !localStorage.getItem('CT_CUSTOM_DOMAIN')){
       return this.options.protocol + '//' + localStorage.getItem('CT_X-WZRK-RD') + '/a2?t=77';
     } else {
       let domain = this.options.domain;
@@ -178,16 +179,16 @@ export default class QueueManager {
     Utils.log.debug(`Sending events: ${JSON.stringify(events)}`);
 
     var _this = this;
-    new Request(url, events).send( function(status, response) {
+    new Request(url, events).send( function(status, response, headers) {
       _this._uploading = false;
       response = response || {};
       Utils.log.debug(`handling response with status: ${status} and data: ${JSON.stringify(response)}`);
 
       try {
 
-        if(response.header['X-WZRK-RD'] && !localStorage.getItem('CT_X-WZRK-RD')){
-          Utils.log.debug(`Redirect to: ${response.header['X-WZRK-RD']}`);
-          localStorage.setItem('CT_X-WZRK-RD', response.header['X-WZRK-RD']);
+        if(headers['X-WZRK-RD'] && !localStorage.getItem('CT_X-WZRK-RD')){
+          Utils.log.debug(`Redirect to: ${headers['X-WZRK-RD']}`);
+          localStorage.setItem('CT_X-WZRK-RD', headers['X-WZRK-RD']);
           return _this._sendEvents(callback);
         } 
 
