@@ -3255,6 +3255,8 @@ var CleverTap = function () {
         }
 
         localStorage.setItem(Constants.CUSTOM_DOMAIN, config.domain);
+      } else {
+        localStorage.removeItem(Constants.CUSTOM_DOMAIN);
       }
 
       this.api = new CleverTapAPI(Object.assign({}, this.options));
