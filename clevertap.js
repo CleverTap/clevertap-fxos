@@ -2234,9 +2234,10 @@ var QueueManager = function () {
   }, {
     key: '_getEndPoint',
     value: function _getEndPoint() {
-      /* If we have a redirect url and no custom domain is set, use the redirect url */
-      if (localStorage.getItem(Constants.REDIRECT_HEADER) && !localStorage.getItem(Constants.CUSTOM_DOMAIN)) {
+      if (localStorage.getItem(Constants.REDIRECT_HEADER)) {
         return this.options.protocol + '//' + localStorage.getItem(Constants.REDIRECT_HEADER) + '/a2?t=77';
+      } else if (localStorage.getItem(Constants.CUSTOM_DOMAIN)) {
+        return this.options.protocol + '//' + localStorage.getItem(Constants.CUSTOM_DOMAIN) + '/a2?t=77';
       } else {
         var domain = this.options.domain;
         if (Account.getRegion()) {
@@ -3247,6 +3248,12 @@ var CleverTap = function () {
       /* Override default options with custom domain */
       if (config.hasOwnProperty('domain') && Utils$1.isValidDomain(config.domain)) {
         this.options.domain = config.domain;
+
+        /* This will remove the old redirect header if present */
+        if (localStorage.getItem(Constants.REDIRECT_HEADER) && !localStorage.getItem(Constants.CUSTOM_DOMAIN)) {
+          localStorage.removeItem(Constants.REDIRECT_HEADER);
+        }
+
         localStorage.setItem(Constants.CUSTOM_DOMAIN, config.domain);
       }
 

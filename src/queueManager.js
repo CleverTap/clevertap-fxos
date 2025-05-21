@@ -72,9 +72,10 @@ export default class QueueManager {
     this._scheduleEvents();
   }
   _getEndPoint() {
-    /* If we have a redirect url and no custom domain is set, use the redirect url */
-    if(localStorage.getItem(Constants.REDIRECT_HEADER) && !localStorage.getItem(Constants.CUSTOM_DOMAIN)){
+    if(localStorage.getItem(Constants.REDIRECT_HEADER)){
       return this.options.protocol + '//' + localStorage.getItem(Constants.REDIRECT_HEADER) + '/a2?t=77';
+    } else if(localStorage.getItem(Constants.CUSTOM_DOMAIN)){
+      return this.options.protocol + '//' + localStorage.getItem(Constants.CUSTOM_DOMAIN) + '/a2?t=77';
     } else {
       let domain = this.options.domain;
       if (Account.getRegion()) {

@@ -34,6 +34,12 @@ export default class CleverTap {
     /* Override default options with custom domain */
     if(config.hasOwnProperty('domain') && Utils.isValidDomain(config.domain)){
       this.options.domain = config.domain;
+
+      /* This will remove the old redirect header if present */
+      if(localStorage.getItem(Constants.REDIRECT_HEADER) && !localStorage.getItem(Constants.CUSTOM_DOMAIN)){
+        localStorage.removeItem(Constants.REDIRECT_HEADER);
+      }
+
       localStorage.setItem(Constants.CUSTOM_DOMAIN, config.domain);
     }
 
