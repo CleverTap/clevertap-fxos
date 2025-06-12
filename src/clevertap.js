@@ -9,6 +9,7 @@ import UserHandler from './userHandler';
 import UserLoginHandler from './userLoginHandler';
 import Utils from './utils';
 import Device from './device';
+import Constants from './constants';
 
 export default class CleverTap {
   constructor(old={}) {
@@ -19,7 +20,7 @@ export default class CleverTap {
     this.logLevels = Utils.logLevels;
     this.swpath = '/serviceWorker.js';
   }
-  init(id, region) {
+  init(id, region, config = {}) {
     if (Utils.isEmptyString(id)) {
       Utils.log.error(ErrorManager.MESSAGES.init);
       return;
@@ -29,6 +30,21 @@ export default class CleverTap {
     if(Device.getVAPIDState() === null){
       Device.setVAPIDState(false);
     }
+
+    /* Override default options with custom domain */
+    if(config.hasOwnProperty('domain') && Utils.isValidDomain(config.domain)){
+      this.options.domain = config.domain;
+
+      /* This will remove the old redirect header if present */
+      if(localStorage.getItem(Constants.REDIRECT_HEADER) && !localStorage.getItem(Constants.CUSTOM_DOMAIN)){
+        localStorage.removeItem(Constants.REDIRECT_HEADER);
+      }
+
+      localStorage.setItem(Constants.CUSTOM_DOMAIN, config.domain);
+    } else {
+      localStorage.removeItem(Constants.CUSTOM_DOMAIN);
+    }
+
     this.api = new CleverTapAPI(Object.assign({}, this.options));
     this.session = new SessionHandler(this.api);
     this.user = new UserHandler(this.api);

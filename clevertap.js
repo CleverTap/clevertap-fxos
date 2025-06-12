@@ -36,7 +36,10 @@ var Constants = {
   TOKEN_UPDATE_TS_KEY: 'CT_TK_TS',
   KAIOS_NOTIFICATION_STATE: 'CT_KOS_S',
   SW_UNREGISTER_FOR_VERSION: 'CT_SW_VR',
-  APP_VERSION_KEY: "CT_AP_VR"
+  APP_VERSION_KEY: "CT_AP_VR",
+  RESPONSE_HEADER_REDIRECT_KEY: "X-WZRK-RD",
+  REDIRECT_HEADER: "CT_X-WZRK-RD",
+  CUSTOM_DOMAIN: "CT_CUSTOM_DOMAIN"
 };
 
 var dataNotSent = 'This property has been ignored.';
@@ -491,6 +494,11 @@ var isAnonymousDevice = function isAnonymousDevice() {
     return isObjectEmpty(identitiesMap);
 };
 
+var isValidDomain = function isValidDomain(domain) {
+    var domainRegex = /^(?!:\/\/)([a-zA-Z0-9-_]{1,63}\.)+[a-zA-Z]{2,}$/;
+    return domainRegex.test(domain);
+};
+
 var Utils = {
     logLevels: logLevels,
     setLogLevel: setLogLevel,
@@ -523,7 +531,8 @@ var Utils = {
     removeFromStorage: removeFromStorage,
     setEnum: setEnum,
     reportError: reportError,
-    isAnonymousDevice: isAnonymousDevice
+    isAnonymousDevice: isAnonymousDevice,
+    isValidDomain: isValidDomain
 };
 
 var StorageManager = function () {
@@ -977,6 +986,11 @@ var isAnonymousDevice$1 = function isAnonymousDevice() {
     return isObjectEmpty$1(identitiesMap);
 };
 
+var isValidDomain$1 = function isValidDomain(domain) {
+    var domainRegex = /^(?!:\/\/)([a-zA-Z0-9-_]{1,63}\.)+[a-zA-Z]{2,}$/;
+    return domainRegex.test(domain);
+};
+
 var Utils$1 = {
     logLevels: logLevels$1,
     setLogLevel: setLogLevel$1,
@@ -1009,7 +1023,8 @@ var Utils$1 = {
     removeFromStorage: removeFromStorage$1,
     setEnum: setEnum$1,
     reportError: reportError$1,
-    isAnonymousDevice: isAnonymousDevice$1
+    isAnonymousDevice: isAnonymousDevice$1,
+    isValidDomain: isValidDomain$1
 };
 
 /* jshint bitwise: false, laxbreak: true */
@@ -2118,8 +2133,12 @@ var Request = function () {
       }
 
       function _onRequestLoad() {
+        var redirectHeader = request.getResponseHeader(Constants.RESPONSE_HEADER_REDIRECT_KEY);
+        var headers = {};
+        headers[Constants.RESPONSE_HEADER_REDIRECT_KEY] = redirectHeader;
+
         if (callback) {
-          callback(request.status, request.response);
+          callback(request.status, request.response, headers);
         }
       }
 
@@ -2215,11 +2234,17 @@ var QueueManager = function () {
   }, {
     key: '_getEndPoint',
     value: function _getEndPoint() {
-      var domain = this.options.domain;
-      if (Account.getRegion()) {
-        domain = Account.getRegion() + '.' + this.options.domain;
+      if (localStorage.getItem(Constants.REDIRECT_HEADER)) {
+        return this.options.protocol + '//' + localStorage.getItem(Constants.REDIRECT_HEADER) + '/a2?t=77';
+      } else if (localStorage.getItem(Constants.CUSTOM_DOMAIN)) {
+        return this.options.protocol + '//' + localStorage.getItem(Constants.CUSTOM_DOMAIN) + '/a2?t=77';
+      } else {
+        var domain = this.options.domain;
+        if (Account.getRegion()) {
+          domain = Account.getRegion() + '.' + this.options.domain;
+        }
+        return this.options.protocol + '//' + domain + '/a2?t=77';
       }
-      return this.options.protocol + '//' + domain + '/a2?t=77';
     }
   }, {
     key: '_unsentCount',
@@ -2268,6 +2293,7 @@ var QueueManager = function () {
   }, {
     key: '_sendEvents',
     value: function _sendEvents(callback) {
+
       var _willNotSend = false;
       var _message = "";
       if (this._uploading) {
@@ -2324,12 +2350,19 @@ var QueueManager = function () {
       Utils$1.log.debug('Sending events: ' + JSON.stringify(events));
 
       var _this = this;
-      new Request(url, events).send(function (status, response) {
+      new Request(url, events).send(function (status, response, headers) {
         _this._uploading = false;
         response = response || {};
         Utils$1.log.debug('handling response with status: ' + status + ' and data: ' + JSON.stringify(response));
 
         try {
+
+          if (headers[Constants.RESPONSE_HEADER_REDIRECT_KEY] && !localStorage.getItem(Constants.REDIRECT_HEADER)) {
+            Utils$1.log.debug('Redirect to: ' + headers[Constants.RESPONSE_HEADER_REDIRECT_KEY]);
+            localStorage.setItem(Constants.REDIRECT_HEADER, headers[Constants.RESPONSE_HEADER_REDIRECT_KEY]);
+            return _this._sendEvents(callback);
+          }
+
           if (status === 200) {
             if (response.g) {
               Device.setGUID(response.g);
@@ -3200,6 +3233,8 @@ var CleverTap = function () {
   createClass(CleverTap, [{
     key: 'init',
     value: function init(id, region) {
+      var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
       if (Utils$1.isEmptyString(id)) {
         Utils$1.log.error(ErrorManager.MESSAGES.init);
         return;
@@ -3209,6 +3244,21 @@ var CleverTap = function () {
       if (Device.getVAPIDState() === null) {
         Device.setVAPIDState(false);
       }
+
+      /* Override default options with custom domain */
+      if (config.hasOwnProperty('domain') && Utils$1.isValidDomain(config.domain)) {
+        this.options.domain = config.domain;
+
+        /* This will remove the old redirect header if present */
+        if (localStorage.getItem(Constants.REDIRECT_HEADER) && !localStorage.getItem(Constants.CUSTOM_DOMAIN)) {
+          localStorage.removeItem(Constants.REDIRECT_HEADER);
+        }
+
+        localStorage.setItem(Constants.CUSTOM_DOMAIN, config.domain);
+      } else {
+        localStorage.removeItem(Constants.CUSTOM_DOMAIN);
+      }
+
       this.api = new CleverTapAPI(Object.assign({}, this.options));
       this.session = new SessionHandler(this.api);
       this.user = new UserHandler(this.api);

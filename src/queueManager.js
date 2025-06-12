@@ -72,11 +72,17 @@ export default class QueueManager {
     this._scheduleEvents();
   }
   _getEndPoint() {
-    let domain = this.options.domain;
-    if (Account.getRegion()) {
-      domain = Account.getRegion() + '.' + this.options.domain;
+    if(localStorage.getItem(Constants.REDIRECT_HEADER)){
+      return this.options.protocol + '//' + localStorage.getItem(Constants.REDIRECT_HEADER) + '/a2?t=77';
+    } else if(localStorage.getItem(Constants.CUSTOM_DOMAIN)){
+      return this.options.protocol + '//' + localStorage.getItem(Constants.CUSTOM_DOMAIN) + '/a2?t=77';
+    } else {
+      let domain = this.options.domain;
+      if (Account.getRegion()) {
+        domain = Account.getRegion() + '.' + this.options.domain;
+      }
+      return this.options.protocol + '//' + domain + '/a2?t=77';
     }
-    return this.options.protocol + '//' + domain + '/a2?t=77';
   }
   _unsentCount() {
     return this._unsentEvents.length + this._unsentProfiles.length;
@@ -117,6 +123,7 @@ export default class QueueManager {
     return false;
   }
   _sendEvents(callback) {
+
     var _willNotSend = false;
     var _message = "";
     if (this._uploading) {
@@ -173,12 +180,19 @@ export default class QueueManager {
     Utils.log.debug(`Sending events: ${JSON.stringify(events)}`);
 
     var _this = this;
-    new Request(url, events).send( function(status, response) {
+    new Request(url, events).send( function(status, response, headers) {
       _this._uploading = false;
       response = response || {};
       Utils.log.debug(`handling response with status: ${status} and data: ${JSON.stringify(response)}`);
 
       try {
+
+        if(headers[Constants.RESPONSE_HEADER_REDIRECT_KEY] && !localStorage.getItem(Constants.REDIRECT_HEADER)){
+          Utils.log.debug(`Redirect to: ${headers[Constants.RESPONSE_HEADER_REDIRECT_KEY]}`);
+          localStorage.setItem(Constants.REDIRECT_HEADER, headers[Constants.RESPONSE_HEADER_REDIRECT_KEY]);
+          return _this._sendEvents(callback);
+        } 
+
         if (status === 200) {
           if (response.g) {
             Device.setGUID(response.g);
